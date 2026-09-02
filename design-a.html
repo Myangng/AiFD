@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Purring Parlor — Vintage Cat Vending Machine</title>
+<style>
+*{box-sizing:border-box}
+:root{--burgundy:#6f2431;--deep:#2d1c1b;--cream:#f3dfb9;--paper:#c7b783;--brass:#b1843e;--gold:#e3bd68;--green:#3e6254;--wood:#563726}
+html,body{min-height:100%;margin:0}
+body{overflow-x:hidden;color:var(--deep);font-family:Georgia,"Times New Roman",serif;background:#796e42}
+.scene{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 18px 60px;position:relative;overflow:hidden;background:
+linear-gradient(#0002,#0000 15%,#0002),
+repeating-linear-gradient(90deg,transparent 0 58px,#584f2e22 58px 61px),
+radial-gradient(circle at 50% 20%,#ddd09a,#aea06a 65%,#827741)}
+.scene:before{content:"";position:absolute;inset:0 0 22%;opacity:.34;pointer-events:none;background:
+radial-gradient(ellipse at center,#384832 0 14%,transparent 15%) 0 0/92px 72px,
+radial-gradient(ellipse at center,#384832 0 14%,transparent 15%) 46px 36px/92px 72px}
+.floor{position:absolute;z-index:0;left:0;right:0;bottom:0;height:22%;background:repeating-linear-gradient(98deg,#62402d 0 58px,#76503a 59px 114px,#422b20 115px 118px);border-top:10px solid #38231c;box-shadow:inset 0 16px 22px #0006}
+.floor:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 15%,#fff1 17%,transparent 19%);opacity:.35}
+.vignette{position:fixed;inset:0;z-index:20;pointer-events:none;box-shadow:inset 0 0 130px 34px #23170fb8}
+.header{z-index:2;text-align:center;margin-bottom:14px;color:#38221d;text-shadow:0 1px #eadba9}
+h1{font-size:clamp(30px,5vw,51px);margin:0;letter-spacing:2px;font-variant:small-caps}.tagline{margin:5px 0 0;font-style:italic;font-weight:bold;letter-spacing:1px}
+.machine-wrap{z-index:2;position:relative;filter:drop-shadow(0 26px 16px #1b100b88)}
+.machine{width:min(430px,92vw);height:650px;position:relative;padding:28px 30px;border:5px solid #271814;border-radius:58px 58px 22px 22px;background:
+linear-gradient(90deg,#0004,transparent 8% 91%,#0005),
+linear-gradient(#8c3541,#6d202d 64%,#521923);box-shadow:inset 0 0 0 7px #c29a4c,inset 0 0 0 11px #4d271f,inset 12px 0 #fff1}
+.machine:before,.machine:after{content:"";position:absolute;bottom:-16px;width:68px;height:30px;background:#281812;border:5px solid #b1843e;border-radius:4px 4px 12px 12px;z-index:-1}.machine:before{left:35px}.machine:after{right:35px}
+.crown{height:102px;margin:-13px 2px 15px;position:relative;padding:13px 31px;background:linear-gradient(#d9bd76,#9c6d2d);border:4px solid #2c1b17;border-radius:48% 48% 15px 15px;box-shadow:inset 0 0 0 5px #f0d994,inset 0 -12px #815725}
+.marquee{height:100%;display:grid;place-items:center;text-align:center;border:3px solid #593526;border-radius:35px 35px 9px 9px;color:#f8e7bd;background:#3d6254;text-shadow:2px 2px #172b24;font-weight:900;font-size:25px;line-height:.86;letter-spacing:2px}.marquee small{display:block;font-size:12px;letter-spacing:4px;margin-top:8px}
+.bulbs{position:absolute;inset:4px;pointer-events:none}.bulb{position:absolute;width:10px;height:10px;border-radius:50%;background:#ffe7a4;box-shadow:0 0 8px 3px #ffc95d;animation:flicker 1.8s infinite alternate}.bulb:nth-child(2n){animation-delay:-1.1s}.b1{left:22px;top:21px}.b2{right:22px;top:21px}.b3{left:13px;top:48px}.b4{right:13px;top:48px}.b5{left:25px;bottom:15px}.b6{right:25px;bottom:15px}@keyframes flicker{40%{opacity:.55}55%,100%{opacity:1}}
+.window{position:relative;height:275px;padding:17px;overflow:hidden;border:6px ridge #d0aa5a;border-radius:14px;background:linear-gradient(135deg,#496658,#223b34);box-shadow:inset 0 0 30px 13px #090f0d,inset 0 0 0 4px #21140f}
+.window:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,#fff3 4%,transparent 17% 73%,#fff1 76%,transparent 84%)}
+.cats{height:100%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:15px;position:relative;z-index:1}.shelf{position:absolute;left:0;right:0;top:50%;height:9px;background:linear-gradient(#c29a4c,#55361f);box-shadow:0 4px 8px #000;z-index:2}
+.cubby{display:grid;place-items:center;border:2px solid #ba9b5d;border-radius:50% 50% 9px 9px;background:radial-gradient(circle,#f0dba1 0 28%,#a47c3d 29% 32%,#251c17 34%);box-shadow:inset 0 0 12px #000b}.mini{font-size:48px;animation:bob 2.2s ease-in-out infinite alternate;filter:sepia(.18) drop-shadow(0 5px 2px #0008)}.cubby:nth-child(2n) .mini{animation-delay:-1.3s}@keyframes bob{to{transform:translateY(-6px) rotate(3deg)}}
+.controls{height:112px;margin-top:16px;display:grid;grid-template-columns:1fr 102px;gap:17px}.instruction{border:4px double #342019;background:#ead7a9;padding:9px 12px;text-align:center;box-shadow:inset 0 0 10px #8a744f}.instruction strong{font-size:17px;letter-spacing:1px}.display{margin-top:6px;padding:8px;background:#201b16;border:3px inset #b28a45;color:#f0c875;font:700 14px "Courier New",monospace;letter-spacing:1px;text-shadow:0 0 5px #e7b84f}.coinbox{display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #bd9953;background:linear-gradient(90deg,#6f552f,#d0ae62,#74572d);box-shadow:inset 0 0 0 3px #38271a}.slot{width:52px;height:9px;border-radius:9px;background:#1d1610;box-shadow:inset 0 2px 3px #000}.coin{margin-top:9px;width:70px;height:70px;border-radius:50%;color:#392715;background:radial-gradient(circle,#f4d489 0 22%,#ba8a39 24% 29%,#e1bd6c 31% 46%,#8c642b 48%);border:3px solid #392513;font-weight:900;font-family:Georgia,serif;cursor:pointer;box-shadow:0 5px 0 #3d2a18,0 8px 7px #0007;transition:.13s}.coin:hover{filter:brightness(1.13);transform:rotate(-4deg)}.coin:active{transform:translateY(4px);box-shadow:0 1px #3d2a18}.coin.ready{animation:coinGlow 1s infinite alternate}@keyframes coinGlow{to{box-shadow:0 5px 0 #3d2a18,0 0 16px 5px #f7d77b}}
+.chute{position:absolute;left:50%;bottom:27px;transform:translateX(-50%);width:240px;height:99px;border:6px ridge #c19a51;border-radius:12px 12px 36px 36px;background:linear-gradient(#1e1714,#3d2b25);box-shadow:inset 0 15px 15px #000b;display:flex;justify-content:center;align-items:flex-end}.chute-label{position:absolute;top:11px;color:#ccb27b;font-size:11px;letter-spacing:3px}.curtain{position:absolute;top:0;width:55%;height:64px;background:repeating-linear-gradient(90deg,#5e1825 0 12px,#7d2937 13px 24px);border-bottom:5px solid #d1a251;transition:.35s}.curtain.left{left:0;border-radius:5px 0 30px}.curtain.right{right:0;border-radius:0 5px 0 30px}.chute.open .curtain.left{transform:translateX(-75%)}.chute.open .curtain.right{transform:translateX(75%)}
+.big-cat{position:absolute;z-index:8;left:50%;bottom:5px;font-size:115px;opacity:0;transform:translate(-50%,150px) scale(.25) rotate(-10deg);filter:drop-shadow(0 12px 3px #0006);pointer-events:none}.big-cat.pop{animation:pop 1.4s cubic-bezier(.18,.9,.25,1.2) forwards}@keyframes pop{0%{opacity:0;transform:translate(-50%,140px) scale(.25)}48%{opacity:1;transform:translate(-50%,-112px) scale(1.14) rotate(7deg)}72%{transform:translate(-50%,-78px) scale(.94) rotate(-3deg)}100%{opacity:1;transform:translate(-50%,-88px) scale(1)}}
+.spark{position:fixed;z-index:30;pointer-events:none;font-size:22px;animation:spark .95s ease-out forwards}@keyframes spark{to{transform:translate(var(--x),var(--y)) rotate(200deg) scale(.15);opacity:0}}
+.rug{position:absolute;z-index:1;bottom:1%;width:min(620px,90vw);height:110px;border-radius:50%;background:radial-gradient(ellipse,#b69754 0 11%,#6e2632 12% 28%,#d1b260 29% 33%,#3d604f 34% 50%,#b99750 51% 55%,#6b2330 56% 72%,transparent 73%);transform:perspective(350px) rotateX(62deg);filter:drop-shadow(0 12px 10px #0008)}
+.hint{z-index:2;margin-top:31px;padding:9px 18px;color:#f2dfb4;background:#33251fd9;border:2px solid #c4a157;border-radius:4px;font-size:14px;letter-spacing:1px;text-align:center;box-shadow:0 5px 12px #0006}
+@media(max-height:850px){.scene{justify-content:flex-start;padding-top:14px}.header{margin-bottom:6px}.machine{transform:scale(.82);transform-origin:top center}.hint{margin-top:-95px}}
+@media(max-width:480px){.machine{height:625px;padding:24px 22px}.window{height:254px}.mini{font-size:42px}.controls{grid-template-columns:1fr 90px}.header .tagline{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="floor"></div><div class="rug"></div>
+  <header class="header"><h1>The Purring Parlor</h1><p class="tagline">Curious Companions, Dispensed Daily</p></header>
+  <div class="machine-wrap">
+    <section class="machine" aria-label="Vintage interactive cat vending machine">
+      <div class="crown">
+        <div class="marquee">CAT-O-MATIC <small>ESTABLISHED 1927</small></div>
+        <div class="bulbs"><i class="bulb b1"></i><i class="bulb b2"></i><i class="bulb b3"></i><i class="bulb b4"></i><i class="bulb b5"></i><i class="bulb b6"></i></div>
+      </div>
+      <div class="window"><div class="shelf"></div><div class="cats">
+        <div class="cubby"><span class="mini">🐈</span></div><div class="cubby"><span class="mini">🐈‍⬛</span></div><div class="cubby"><span class="mini">😺</span></div>
+        <div class="cubby"><span class="mini">😸</span></div><div class="cubby"><span class="mini">😻</span></div><div class="cubby"><span class="mini">😼</span></div>
+      </div></div>
+      <div class="controls"><div class="instruction"><strong>PLACE ONE TOKEN</strong><br><em>For a fine feline friend</em><div id="display" class="display">AWAITING TOKEN</div></div><div class="coinbox"><div class="slot"></div><button id="coin" class="coin" aria-label="Insert brass token">1¢<br>CAT</button></div></div>
+      <div id="chute" class="chute"><span class="chute-label">DELIVERY PARLOR</span><div class="curtain left"></div><div class="curtain right"></div><div id="bigCat" class="big-cat">🐈</div></div>
+    </section>
+  </div>
+  <div class="hint">Press the brass CAT token to summon a new companion</div>
+</div><div class="vignette"></div>
+<script>
+const coin=document.getElementById('coin'),display=document.getElementById('display'),bigCat=document.getElementById('bigCat'),chute=document.getElementById('chute');
+const cats=['🐈','🐈‍⬛','😺','😸','😻','😼','😽','🙀'];
+function sparkles(){const r=bigCat.getBoundingClientRect();for(let i=0;i<18;i++){const s=document.createElement('span');s.className='spark';s.textContent=i%4?'✦':'♥';s.style.color=i%4?'#e2bd6a':'#8c3440';s.style.left=(r.left+r.width/2)+'px';s.style.top=(r.top+r.height/2)+'px';const a=Math.random()*Math.PI*2,d=65+Math.random()*135;s.style.setProperty('--x',Math.cos(a)*d+'px');s.style.setProperty('--y',Math.sin(a)*d+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),1000)}}
+coin.addEventListener('click',()=>{coin.disabled=true;coin.classList.remove('ready');display.textContent='MECHANISM TURNING';chute.classList.remove('open');bigCat.classList.remove('pop');void bigCat.offsetWidth;bigCat.textContent=cats[Math.floor(Math.random()*cats.length)];setTimeout(()=>{chute.classList.add('open');bigCat.classList.add('pop');display.textContent='A SPLENDID CAT!'},420);setTimeout(sparkles,850);setTimeout(()=>{display.textContent='ANOTHER, PERHAPS?';coin.disabled=false;coin.classList.add('ready')},1700)});
+</script>
+</body>
+</html>
