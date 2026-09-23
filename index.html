@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Michell's ART 3041 portfolio for A.I. for Designers, Fall 2026.">
+  <title>A.I. FOR DESIGNERS — Michell</title>
+  <style>
+    :root {
+      --paper: #f4efe5;
+      --ink: #211b17;
+      --brown: #596247;
+      --brown-dark: #35402e;
+      --sand: #cbd4b9;
+      --cream: #fffaf1;
+      --line: rgba(33, 27, 23, 0.22);
+      --pad: clamp(1rem, 3.5vw, 3rem);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 280px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 92% 5%, rgba(116, 132, 91, 0.22), transparent 25rem),
+        var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(1500px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: var(--pad);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: start;
+      padding: 0.75rem 0 1rem;
+      border-top: 2px solid var(--ink);
+      border-bottom: 1px solid var(--line);
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.55;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .topbar p { margin: 0; }
+
+    .identity { text-align: right; }
+
+    .email {
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.25em;
+      transition: color 160ms ease;
+    }
+
+    .email:hover,
+    .email:focus-visible { color: var(--brown); outline: none; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(170px, 0.34fr);
+      gap: clamp(1rem, 5vw, 5rem);
+      align-items: end;
+      padding: clamp(3rem, 10vw, 9rem) 0 clamp(4rem, 10vw, 8rem);
+    }
+
+    .title {
+      margin: 0;
+      max-width: 9ch;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(4rem, 12vw, 11.5rem);
+      font-weight: 400;
+      line-height: 0.79;
+      letter-spacing: -0.078em;
+      text-wrap: balance;
+    }
+
+    .name-block {
+      align-self: end;
+      padding-bottom: 0.4rem;
+    }
+
+    .name-line {
+      display: block;
+      width: 100%;
+      height: 1px;
+      margin-bottom: 1rem;
+      background: var(--brown);
+    }
+
+    .name-label {
+      margin: 0 0 0.25rem;
+      color: var(--brown);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .name {
+      margin: 0;
+      color: var(--brown);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.5rem, 5vw, 5.7rem);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+    }
+
+    .work-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .work-header h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      font-weight: 400;
+      letter-spacing: -0.045em;
+    }
+
+    .work-header p {
+      margin: 0;
+      color: var(--brown);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .work-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .work-item { border-bottom: 1px solid var(--line); }
+
+    .work-link {
+      position: relative;
+      display: grid;
+      grid-template-columns: clamp(3.5rem, 7vw, 6.5rem) minmax(0, 1fr) auto;
+      gap: clamp(0.75rem, 2vw, 1.5rem);
+      align-items: center;
+      min-height: clamp(5.7rem, 9vw, 8.25rem);
+      padding: 0.85rem 0;
+      text-decoration: none;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .work-link::before {
+      content: "";
+      position: absolute;
+      inset: 0 calc(-1 * var(--pad));
+      z-index: -1;
+      background: var(--brown);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 320ms cubic-bezier(.2,.75,.2,1);
+    }
+
+    .number {
+      width: clamp(2.8rem, 5vw, 4.5rem);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      color: var(--brown-dark);
+      background: var(--sand);
+      border-radius: 50%;
+      font-size: clamp(0.72rem, 1.2vw, 0.9rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      transition: transform 250ms ease, background 200ms ease;
+    }
+
+    .project-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.65rem, 4.3vw, 4.55rem);
+      line-height: 0.96;
+      letter-spacing: -0.047em;
+    }
+
+    .arrow {
+      width: clamp(2.4rem, 4.5vw, 4rem);
+      height: clamp(2.4rem, 4.5vw, 4rem);
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      font-size: clamp(1.15rem, 2.5vw, 2rem);
+      transform: rotate(-45deg);
+      transition: transform 250ms ease, background 200ms ease;
+    }
+
+    .work-item:nth-child(even) .project-title { padding-left: clamp(0rem, 3vw, 3rem); }
+
+    .work-link:hover,
+    .work-link:focus-visible { color: var(--cream); outline: none; }
+
+    .work-link:hover::before,
+    .work-link:focus-visible::before {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .work-link:hover .number,
+    .work-link:focus-visible .number {
+      color: var(--brown-dark);
+      background: var(--cream);
+      transform: rotate(-7deg);
+    }
+
+    .work-link:hover .arrow,
+    .work-link:focus-visible .arrow {
+      color: var(--brown-dark);
+      background: var(--sand);
+      transform: rotate(0deg);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+      margin-top: clamp(4rem, 9vw, 8rem);
+      padding-top: 0.8rem;
+      border-top: 2px solid var(--ink);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 680px) {
+      .page { padding: 1rem; }
+      .topbar { grid-template-columns: 1fr; }
+      .identity { text-align: left; overflow-wrap: anywhere; }
+      .hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+        padding: 3.5rem 0 4.5rem;
+      }
+      .title { font-size: clamp(4.1rem, 21vw, 7rem); }
+      .name-block { width: 72%; justify-self: end; }
+      .name { font-size: clamp(2.8rem, 14vw, 4.6rem); }
+      .work-link { grid-template-columns: 3rem minmax(0, 1fr) 2.4rem; }
+      .project-title { font-size: clamp(1.45rem, 7.2vw, 2.45rem); }
+      .work-item:nth-child(even) .project-title { padding-left: 0; }
+      .footer span:last-child { text-align: right; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="topbar">
+        <p>ART 3041 · Fall 2026</p>
+        <div class="identity">
+          <a class="email" href="mailto:Michell.yangng@baruchmail.cuny.edu">Michell.yangng@baruchmail.cuny.edu</a>
+        </div>
+      </div>
+
+      <div class="hero">
+        <h1 class="title">A.I. FOR DESIGNERS</h1>
+        <div class="name-block">
+          <span class="name-line" aria-hidden="true"></span>
+          <p class="name-label">Designed by</p>
+          <p class="name">Michell</p>
+        </div>
+      </div>
+    </header>
+
+    <section aria-labelledby="work-title">
+      <div class="work-header">
+        <h2 id="work-title">Work</h2>
+        <p>01 to 07</p>
+      </div>
+
+      <ol class="work-list">
+        <li class="work-item"><a class="work-link" href="" aria-label="01 Custom Instructions"><span class="number">01</span><span class="project-title">Custom Instructions</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="02 A Style Guide for Your AI"><span class="number">02</span><span class="project-title">A Style Guide for Your AI</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="03 Design a blank"><span class="number">03</span><span class="project-title">Design a ___</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="04 Commute Story"><span class="number">04</span><span class="project-title">Commute Story</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="05 Become a Crea(i)tive Director"><span class="number">05</span><span class="project-title">Become a Crea(i)tive Director</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="06 Experimental AI Interface"><span class="number">06</span><span class="project-title">Experimental AI Interface</span><span class="arrow" aria-hidden="true">→</span></a></li>
+        <li class="work-item"><a class="work-link" href="" aria-label="07 Open"><span class="number">07</span><span class="project-title">Open</span><span class="arrow" aria-hidden="true">→</span></a></li>
+      </ol>
+    </section>
+
+    <footer class="footer">
+      <span>A.I. for Designers</span>
+      <span>2026</span>
+    </footer>
+  </main>
+
+  <script>
+    document.querySelectorAll('.work-link').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        if (!link.getAttribute('href')) event.preventDefault();
+      });
+    });
+  </script>
+</body>
+</html>
