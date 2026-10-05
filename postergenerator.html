@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typographic Poster Generator — Swiss New Wave / Weingart TM</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Bodoni Moda (Collage Display) & Inter (Swiss Baseline Metadata) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      background-color: #0d0f12;
+      color: #f3f4f6;
+      overflow: hidden;
+    }
+
+    /* Range slider custom styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 9999px;
+      background: #252b36;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #e5391d;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(229, 57, 29, 0.45);
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Thin scrollbars */
+    aside::-webkit-scrollbar {
+      width: 6px;
+    }
+    aside::-webkit-scrollbar-track {
+      background: #11141a;
+    }
+    aside::-webkit-scrollbar-thumb {
+      background: #262e3d;
+      border-radius: 3px;
+    }
+
+    /* Subtle drafting table backdrop */
+    .bg-drafting {
+      background-color: #0b0d11;
+      background-image: radial-gradient(#1f2633 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col antialiased select-none">
+
+  <!-- Studio Header -->
+  <header class="h-14 border-b border-slate-800 bg-[#12151c] px-6 flex items-center justify-between z-20 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-3.5 h-3.5 bg-[#e5391d] rounded-sm transform rotate-12 shadow-sm"></div>
+      <h1 class="text-xs sm:text-sm font-semibold tracking-wider uppercase text-slate-100 flex items-center gap-2">
+        Typographic Poster Generator <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono tracking-normal">Weingart TM / Swiss New Wave</span>
+      </h1>
+    </div>
+
+    <div class="flex items-center gap-5 text-xs font-mono text-slate-400">
+      <span class="hidden sm:inline-block">SEED: <span id="lblSeed" class="text-slate-200">#00000</span></span>
+      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+        <button id="btnZoomOut" class="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition">-</button>
+        <span id="lblZoom" class="px-2 text-xs text-slate-300">100%</span>
+        <button id="btnZoomIn" class="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition">+</button>
+        <button id="btnZoomFit" class="px-2 py-1 text-slate-400 hover:text-white text-[10px] uppercase hover:bg-slate-800 rounded transition ml-1">Fit</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- Left Sidebar: Controls -->
+    <aside class="w-[370px] min-w-[340px] max-w-[400px] bg-[#141820] border-r border-slate-800 flex flex-col h-full overflow-y-auto z-10">
+      <div class="p-5 flex flex-col gap-5">
+
+        <!-- Historical Colorway Presets -->
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 block">Archive Color Presets</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button data-preset="weingart" class="preset-btn px-2.5 py-2 text-left bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded transition group">
+              <span class="block text-xs font-semibold text-slate-100 group-hover:text-white">TM 1988 Original</span>
+              <span class="block text-[10px] text-slate-400">Warm Cream / Litho Ink / Vermilion</span>
+            </button>
+            <button data-preset="baselClean" class="preset-btn px-2.5 py-2 text-left bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded transition group">
+              <span class="block text-xs font-semibold text-slate-100 group-hover:text-white">Pure Swiss Paper</span>
+              <span class="block text-[10px] text-slate-400">Crisp Ivory / Jet / Basel Red</span>
+            </button>
+            <button data-preset="nocturne" class="preset-btn px-2.5 py-2 text-left bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded transition group">
+              <span class="block text-xs font-semibold text-slate-100 group-hover:text-white">Film Negative</span>
+              <span class="block text-[10px] text-slate-400">Carbon / Stark Paper / Tangerine</span>
+            </button>
+            <button data-preset="monochrome" class="preset-btn px-2.5 py-2 text-left bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded transition group">
+              <span class="block text-xs font-semibold text-slate-100 group-hover:text-white">Pure Monolith</span>
+              <span class="block text-[10px] text-slate-400">Silver Gray / Ink Black / Pure White</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: Central Geometry -->
+        <div class="space-y-4 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Central Structure</label>
+            <span id="txtTilt" class="text-xs font-mono text-[#e5391d]">18°</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Square Tilt Rotation</span>
+              </div>
+              <input type="range" id="rngTilt" min="-45" max="45" value="18" class="w-full">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Square Scale</span>
+                <span id="txtScale" class="text-xs font-mono text-slate-400">520px</span>
+              </div>
+              <input type="range" id="rngScale" min="360" max="680" value="520" class="w-full">
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-xs text-slate-300">Mask/Clip to Frame</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="chkClipping" class="sr-only peer" checked>
+                <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#e5391d]"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Typographic Collage -->
+        <div class="space-y-4 pt-4 border-t border-slate-800">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Typographic Collage</label>
+          
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Glyph & Line Density</span>
+                <span id="txtDensity" class="text-xs font-mono text-slate-400">28</span>
+              </div>
+              <input type="range" id="rngDensity" min="10" max="55" value="28" class="w-full">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Vermilion Accent Rate</span>
+                <span id="txtAccentFreq" class="text-xs font-mono text-slate-400">10%</span>
+              </div>
+              <input type="range" id="rngAccentFreq" min="0" max="30" value="10" class="w-full">
+            </div>
+
+            <div>
+              <label class="text-xs text-slate-300 mb-1 block">Letter & Glyph Pool (Bodoni)</label>
+              <input type="text" id="iptGlyphs" value="A B C D E F M N R X Z 1 2 7 8 9 ? / ! &" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-100 font-mono focus:border-[#e5391d] focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Exact Color Palette -->
+        <div class="space-y-3 pt-4 border-t border-slate-800">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Exact Poster Palette</label>
+          <div class="grid grid-cols-4 gap-2">
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-1">Ground</span>
+              <input type="color" id="colBg" value="#f4f1ea" class="w-full h-8 rounded bg-transparent border border-slate-700 cursor-pointer">
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-1">Square</span>
+              <input type="color" id="colSquare" value="#ffffff" class="w-full h-8 rounded bg-transparent border border-slate-700 cursor-pointer">
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-1">Ink Black</span>
+              <input type="color" id="colInk" value="#121110" class="w-full h-8 rounded bg-transparent border border-slate-700 cursor-pointer">
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-1">Vermilion</span>
+              <input type="color" id="colAccent" value="#e5391d" class="w-full h-8 rounded bg-transparent border border-slate-700 cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Swiss Baseline Metadata -->
+        <div class="space-y-3 pt-4 border-t border-slate-800">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Swiss Baseline Metadata (Inter)</label>
+          <div class="space-y-2">
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-0.5">Primary Metadata Line</span>
+              <input type="text" id="iptMeta1" value="TYPOGRAPHISCHE MONATSBLÄTTER / SCHWEIZER GRAFISCHE MITTEILUNGEN" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-[#e5391d] focus:outline-none">
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 font-mono block mb-0.5">Secondary Details / Date</span>
+              <input type="text" id="iptMeta2" value="VOL. 107 / AUSGABE 4 — ZEITSCHRIFT FÜR TYPOGRAFIE UND GESTALTUNG" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-[#e5391d] focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons Footer -->
+      <div class="p-5 mt-auto border-t border-slate-800 bg-[#11141a]/95 backdrop-blur sticky bottom-0 space-y-2.5">
+        <button id="btnShuffle" class="w-full py-2.5 px-4 bg-[#e5391d] hover:bg-[#ff492a] text-white font-semibold text-xs rounded shadow-sm transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Generate / Shuffle
+        </button>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnExportSVG" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs rounded transition flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#e5391d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export SVG
+          </button>
+          <button id="btnExportPNG" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs rounded transition flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#e5391d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Export PNG
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Canvas Preview Stage -->
+    <main class="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden bg-drafting">
+      <div id="posterWrapper" class="transition-transform duration-100 ease-out shadow-2xl rounded-sm">
+        <svg 
+          id="posterSvg" 
+          viewBox="0 0 1000 1414" 
+          width="480" 
+          height="678"
+          xmlns="http://www.w3.org/2000/svg"
+          class="rounded-sm block overflow-hidden shadow-2xl"
+          style="background-color: #f4f1ea;"
+        >
+          <!-- Dynamic runtime vector nodes injected via JS -->
+        </svg>
+      </div>
+    </main>
+  </div>
+
+  <canvas id="hiddenCanvas" class="hidden"></canvas>
+
+  <script>
+    const state = {
+      seed: 84920,
+      tilt: 18,
+      scale: 520,
+      density: 28,
+      accentFreq: 0.10,
+      clipping: true,
+      colors: {
+        bg: '#f4f1ea',      // Authentic warm vintage cream ground
+        square: '#ffffff',  // Crisp high-contrast inner paper
+        ink: '#121110',     // Authentic lithographic deep ink black
+        accent: '#e5391d'   // Authentic Swiss vermilion orange-red
+      },
+      glyphs: "A B C D E F M N R X Z 1 2 7 8 9 ? / ! &".split(' '),
+      meta1: "TYPOGRAPHISCHE MONATSBLÄTTER / SCHWEIZER GRAFISCHE MITTEILUNGEN",
+      meta2: "VOL. 107 / AUSGABE 4 — ZEITSCHRIFT FÜR TYPOGRAFIE UND GESTALTUNG",
+      zoom: 1.0
+    };
+
+    const PRESETS = {
+      weingart: { bg: '#f4f1ea', square: '#ffffff', ink: '#121110', accent: '#e5391d' },
+      baselClean: { bg: '#ede8dc', square: '#ffffff', ink: '#0a0a09', accent: '#ff3e18' },
+      nocturne: { bg: '#1c1b1a', square: '#252422', ink: '#f2efe9', accent: '#ff4c2b' },
+      monochrome: { bg: '#e5e3dc', square: '#ffffff', ink: '#111111', accent: '#444444' }
+    };
+
+    // Element references
+    const svg = document.getElementById('posterSvg');
+    const rngTilt = document.getElementById('rngTilt');
+    const rngScale = document.getElementById('rngScale');
+    const rngDensity = document.getElementById('rngDensity');
+    const rngAccentFreq = document.getElementById('rngAccentFreq');
+    const chkClipping = document.getElementById('chkClipping');
+    const colBg = document.getElementById('colBg');
+    const colSquare = document.getElementById('colSquare');
+    const colInk = document.getElementById('colInk');
+    const colAccent = document.getElementById('colAccent');
+    const iptGlyphs = document.getElementById('iptGlyphs');
+    const iptMeta1 = document.getElementById('iptMeta1');
+    const iptMeta2 = document.getElementById('iptMeta2');
+
+    const txtTilt = document.getElementById('txtTilt');
+    const txtScale = document.getElementById('txtScale');
+    const txtDensity = document.getElementById('txtDensity');
+    const txtAccentFreq = document.getElementById('txtAccentFreq');
+    const lblSeed = document.getElementById('lblSeed');
+    const lblZoom = document.getElementById('lblZoom');
+
+    function createPRNG(seed) {
+      let s = seed;
+      return function() {
+        s = Math.sin(s) * 10000;
+        return s - Math.floor(s);
+      };
+    }
+
+    function renderPoster() {
+      const prng = createPRNG(state.seed);
+      lblSeed.textContent = `#${state.seed}`;
+
+      const width = 1000;
+      const height = 1414;
+      const centerX = width / 2;
+      const centerY = height * 0.44; // Positioned slightly above geometric center for Swiss optical balance
+      const size = state.scale;
+
+      // Wipe current nodes
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
+
+      // 1. Defs Block with font styles & clipping mask
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&amp;family=Inter:wght@400;600;700&amp;display=swap');
+          .font-display { font-family: 'Bodoni Moda', serif; }
+          .font-meta { font-family: 'Inter', sans-serif; }
+        </style>
+        <clipPath id="squareMask">
+          <rect x="${-size/2}" y="${-size/2}" width="${size}" height="${size}" />
+        </clipPath>
+      `;
+      svg.appendChild(defs);
+
+      // 2. Poster Base Background (Authentic warm cream ground)
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('width', width);
+      bgRect.setAttribute('height', height);
+      bgRect.setAttribute('fill', state.colors.bg);
+      svg.appendChild(bgRect);
+
+      // 3. Central Rotated Container Group
+      const frameGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      frameGroup.setAttribute('transform', `translate(${centerX}, ${centerY}) rotate(${state.tilt})`);
+
+      // Inner high-contrast paper base
+      const innerCard = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      innerCard.setAttribute('x', -size / 2);
+      innerCard.setAttribute('y', -size / 2);
+      innerCard.setAttribute('width', size);
+      innerCard.setAttribute('height', size);
+      innerCard.setAttribute('fill', state.colors.square);
+      innerCard.setAttribute('stroke', state.colors.ink);
+      innerCard.setAttribute('stroke-width', '4');
+      frameGroup.appendChild(innerCard);
+
+      // Typographic Collage Container
+      const elementsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      if (state.clipping) {
+        elementsGroup.setAttribute('clip-path', 'url(#squareMask)');
+      }
+
+      const pool = state.glyphs.length > 0 ? state.glyphs : ['A', 'B', '1'];
+
+      // Add 2-3 structured film divider lines first to establish the Swiss structure
+      const baseLines = Math.floor(prng() * 3 + 2);
+      for (let l = 0; l < baseLines; l++) {
+        const isAccent = prng() < state.accentFreq;
+        const color = isAccent ? state.colors.accent : state.colors.ink;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const lx = -size / 2;
+        const ly = (prng() - 0.5) * (size * 0.85);
+        const lh = prng() < 0.3 ? 8 : 2; // film tape vs hairline rule
+        line.setAttribute('x', lx);
+        line.setAttribute('y', ly);
+        line.setAttribute('width', size);
+        line.setAttribute('height', lh);
+        line.setAttribute('fill', color);
+        elementsGroup.appendChild(line);
+      }
+
+      // Scatter Typographic collage elements
+      for (let i = 0; i < state.density; i++) {
+        const isAccent = prng() < state.accentFreq;
+        const color = isAccent ? state.colors.accent : state.colors.ink;
+
+        if (prng() < 0.82) {
+          // Deconstructed Bodoni Glyph
+          const glyph = pool[Math.floor(prng() * pool.length)];
+          const fontSize = Math.floor(prng() * 210 + 60);
+          const x = (prng() - 0.5) * (size * 1.15);
+          const y = (prng() - 0.5) * (size * 1.15);
+          
+          // Swiss post-modern orthogonal & slight shear rotations
+          const rotations = [0, 90, 180, 270, Math.floor((prng() - 0.5) * 35)];
+          const rot = rotations[Math.floor(prng() * rotations.length)];
+          const isItalic = prng() < 0.38;
+          const fontWeight = prng() < 0.5 ? '700' : '900';
+
+          const textNode = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          textNode.setAttribute('x', x);
+          textNode.setAttribute('y', y);
+          textNode.setAttribute('class', 'font-display');
+          textNode.setAttribute('font-size', fontSize);
+          textNode.setAttribute('font-style', isItalic ? 'italic' : 'normal');
+          textNode.setAttribute('font-weight', fontWeight);
+          textNode.setAttribute('fill', color);
+          textNode.setAttribute('text-anchor', 'middle');
+          textNode.setAttribute('dominant-baseline', 'central');
+          textNode.setAttribute('transform', `rotate(${rot} ${x} ${y})`);
+          textNode.textContent = glyph;
+
+          if (prng() < 0.2) {
+            textNode.setAttribute('opacity', '0.82');
+          }
+
+          elementsGroup.appendChild(textNode);
+        } else {
+          // Photomechanical graphic tape / bar
+          const lx = (prng() - 0.5) * size;
+          const ly = (prng() - 0.5) * size;
+          const lw = Math.floor(prng() * 10 + 2);
+          const lh = Math.floor(prng() * (size * 0.75) + 50);
+          const lRot = prng() < 0.5 ? 0 : 90;
+
+          const rectLine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rectLine.setAttribute('x', lx);
+          rectLine.setAttribute('y', ly);
+          rectLine.setAttribute('width', lw);
+          rectLine.setAttribute('height', lh);
+          rectLine.setAttribute('fill', color);
+          rectLine.setAttribute('transform', `rotate(${lRot} ${lx} ${ly})`);
+          elementsGroup.appendChild(rectLine);
+        }
+      }
+
+      frameGroup.appendChild(elementsGroup);
+
+      // Re-overlay container border on top of elements
+      const frameBorder = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      frameBorder.setAttribute('x', -size / 2);
+      frameBorder.setAttribute('y', -size / 2);
+      frameBorder.setAttribute('width', size);
+      frameBorder.setAttribute('height', size);
+      frameBorder.setAttribute('fill', 'none');
+      frameBorder.setAttribute('stroke', state.colors.ink);
+      frameBorder.setAttribute('stroke-width', '4');
+      frameGroup.appendChild(frameBorder);
+
+      svg.appendChild(frameGroup);
+
+      const footerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      footerGroup.setAttribute('transform', `translate(110, ${height - 130})`);
+
+      const rule = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      rule.setAttribute('x1', '0');
+      rule.setAttribute('y1', '0');
+      rule.setAttribute('x2', `${width - 220}`);
+      rule.setAttribute('y2', '0');
+      rule.setAttribute('stroke', state.colors.ink);
+      rule.setAttribute('stroke-width', '1.5');
+      rule.setAttribute('opacity', '0.6');
+      footerGroup.appendChild(rule);
+
+      const meta1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      meta1.setAttribute('class', 'font-meta');
+      meta1.setAttribute('x', '0');
+      meta1.setAttribute('y', '30');
+      meta1.setAttribute('font-size', '13');
+      meta1.setAttribute('font-weight', '700');
+      meta1.setAttribute('letter-spacing', '2.4px');
+      meta1.setAttribute('fill', state.colors.ink);
+      meta1.textContent = (state.meta1 || '').toUpperCase();
+      footerGroup.appendChild(meta1);
+
+      const meta2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      meta2.setAttribute('class', 'font-meta');
+      meta2.setAttribute('x', '0');
+      meta2.setAttribute('y', '52');
+      meta2.setAttribute('font-size', '11');
+      meta2.setAttribute('font-weight', '400');
+      meta2.setAttribute('letter-spacing', '1.8px');
+      meta2.setAttribute('fill', state.colors.ink);
+      meta2.setAttribute('opacity', '0.75');
+      meta2.textContent = (state.meta2 || '').toUpperCase();
+      footerGroup.appendChild(meta2);
+
+      svg.appendChild(footerGroup);
+    }
+
+    function exportSVG() {
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+
+      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      if (!source.match(/^<svg[^>]+xmlns\:xlink/)) {
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+      }
+
+      const xmlDoc = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + source;
+      const blob = new Blob([xmlDoc], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `weingart-poster-${state.seed}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportPNG() {
+      const serializer = new XMLSerializer();
+      const svgStr = serializer.serializeToString(svg);
+      const canvas = document.getElementById('hiddenCanvas');
+      canvas.width = 2000;
+      canvas.height = 2828;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        ctx.fillStyle = state.colors.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = `weingart-poster-${state.seed}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    rngTilt.addEventListener('input', (e) => {
+      state.tilt = parseFloat(e.target.value);
+      txtTilt.textContent = `${state.tilt}°`;
+      renderPoster();
+    });
+
+    rngScale.addEventListener('input', (e) => {
+      state.scale = parseInt(e.target.value, 10);
+      txtScale.textContent = `${state.scale}px`;
+      renderPoster();
+    });
+
+    rngDensity.addEventListener('input', (e) => {
+      state.density = parseInt(e.target.value, 10);
+      txtDensity.textContent = state.density;
+      renderPoster();
+    });
+
+    rngAccentFreq.addEventListener('input', (e) => {
+      state.accentFreq = parseInt(e.target.value, 10) / 100;
+      txtAccentFreq.textContent = `${e.target.value}%`;
+      renderPoster();
+    });
+
+    chkClipping.addEventListener('change', (e) => {
+      state.clipping = e.target.checked;
+      renderPoster();
+    });
+
+    colBg.addEventListener('input', (e) => {
+      state.colors.bg = e.target.value;
+      svg.style.backgroundColor = e.target.value;
+      renderPoster();
+    });
+    colSquare.addEventListener('input', (e) => {
+      state.colors.square = e.target.value;
+      renderPoster();
+    });
+    colInk.addEventListener('input', (e) => {
+      state.colors.ink = e.target.value;
+      renderPoster();
+    });
+    colAccent.addEventListener('input', (e) => {
+      state.colors.accent = e.target.value;
+      renderPoster();
+    });
+
+    iptGlyphs.addEventListener('input', (e) => {
+      state.glyphs = e.target.value.split(' ').filter(c => c.length > 0);
+      renderPoster();
+    });
+    iptMeta1.addEventListener('input', (e) => {
+      state.meta1 = e.target.value;
+      renderPoster();
+    });
+    iptMeta2.addEventListener('input', (e) => {
+      state.meta2 = e.target.value;
+      renderPoster();
+    });
+
+    // Preset selection
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = PRESETS[btn.dataset.preset];
+        if (theme) {
+          state.colors.bg = theme.bg;
+          state.colors.square = theme.square;
+          state.colors.ink = theme.ink;
+          state.colors.accent = theme.accent;
+          
+          colBg.value = theme.bg;
+          colSquare.value = theme.square;
+          colInk.value = theme.ink;
+          colAccent.value = theme.accent;
+          svg.style.backgroundColor = theme.bg;
+          renderPoster();
+        }
+      });
+    });
+
+    // Shuffle & Export buttons
+    document.getElementById('btnShuffle').addEventListener('click', () => {
+      state.seed = Math.floor(Math.random() * 90000 + 10000);
+      renderPoster();
+    });
+
+    document.getElementById('btnExportSVG').addEventListener('click', exportSVG);
+    document.getElementById('btnExportPNG').addEventListener('click', exportPNG);
+
+    // Zoom handlers
+    function setZoom(val) {
+      state.zoom = Math.max(0.5, Math.min(1.8, val));
+      lblZoom.textContent = `${Math.round(state.zoom * 100)}%`;
+      svg.setAttribute('width', `${480 * state.zoom}`);
+      svg.setAttribute('height', `${678 * state.zoom}`);
+    }
+
+    document.getElementById('btnZoomIn').addEventListener('click', () => setZoom(state.zoom + 0.15));
+    document.getElementById('btnZoomOut').addEventListener('click', () => setZoom(state.zoom - 0.15));
+    document.getElementById('btnZoomFit').addEventListener('click', () => setZoom(1.0));
+
+    // Initial render
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPoster();
+    });
+  </script>
+</body>
+</html>
