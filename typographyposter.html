@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typographic Collage Poster Generator</title>
+<style>
+  *{box-sizing:border-box}
+  :root{--ui:#f3f1eb;--ink:#1c1c1a;--line:#cbc8bf}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--ui);color:var(--ink)}
+  .app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+  aside{padding:26px;border-right:1px solid var(--line);background:#faf9f5;overflow:auto}
+  h1{font-size:20px;letter-spacing:.02em;margin:0 0 4px}
+  .sub{font-size:11px;margin-bottom:26px;color:#666}
+  section{border-top:1px solid var(--line);padding:16px 0}
+  section h2{font-size:10px;letter-spacing:.16em;margin:0 0 12px}
+  label{font-size:11px;display:block;margin:10px 0 5px}
+  input[type=text],select{width:100%;border:1px solid #aaa;background:white;padding:8px;font:12px Arial}
+  input[type=range]{width:100%}
+  .rangeRow{display:grid;grid-template-columns:1fr 38px;align-items:center;gap:8px}
+  .rangeRow output{text-align:right;font-size:10px}
+  .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  input[type=color]{width:100%;height:34px;border:1px solid #aaa;background:white;padding:2px}
+  .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  button{border:1px solid #222;background:#fff;padding:10px;font-weight:bold;font-size:11px;cursor:pointer}
+  button.primary{grid-column:1/-1;background:#1c1c1a;color:white}
+  main{padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+  .previewLabel{width:min(520px,90%);font-size:10px;letter-spacing:.15em;margin-bottom:10px}
+  .posterWrap{width:min(520px,90%);filter:drop-shadow(0 8px 18px rgba(0,0,0,.12))}
+  svg{width:100%;height:auto;display:block;background:#f4f1e9}
+  .hint{font-size:10px;color:#777;margin-top:12px;max-width:520px;line-height:1.4}
+  @media(max-width:800px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>POSTER GENERATOR</h1>
+  <div class="sub">Experimental typographic collage</div>
+
+  <section>
+    <h2>CONTENT</h2>
+    <label>Main characters</label><input id="chars" type="text" value="S 2 C 5 ? R A G M">
+    <label>Event title</label><input id="title" type="text" value="Typografische Monatsblätter">
+    <label>Subtitle</label><input id="subtitle" type="text" value="Schweizer Grafische Mitteilungen">
+    <label>Date / code</label><input id="date" type="text" value="TM · 6 · 1969">
+    <label>Footer</label><input id="footer" type="text" value="Typographie · Gestaltung · Experiment · Basel">
+  </section>
+
+  <section>
+    <h2>COMPOSITION</h2>
+    <label>Collage rotation</label><div class="rangeRow"><input id="rotation" type="range" min="-55" max="-20" value="-42"><output>-42°</output></div>
+    <label>Density</label><div class="rangeRow"><input id="density" type="range" min="8" max="30" value="19"><output>19</output></div>
+    <label>Scale variation</label><div class="rangeRow"><input id="scale" type="range" min="30" max="100" value="72"><output>72</output></div>
+    <label>Rotation chaos</label><div class="rangeRow"><input id="chaos" type="range" min="0" max="180" value="120"><output>120°</output></div>
+    <label>Texture</label><div class="rangeRow"><input id="texture" type="range" min="0" max="20" value="8"><output>8</output></div>
+  </section>
+
+  <section>
+    <h2>STYLE</h2>
+    <label>Typeface</label>
+    <select id="font"><option>Arial</option><option>Helvetica</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option></select>
+    <label>Grid pattern</label><div class="rangeRow"><input id="gridAmount" type="range" min="0" max="10" value="5"><output>5</output></div>
+  </section>
+
+  <section>
+    <h2>COLORS</h2>
+    <div class="colors">
+      <div><label>Background</label><input id="bg" type="color" value="#f2f0e8"></div>
+      <div><label>Paper</label><input id="paper" type="color" value="#f2dfaa"></div>
+      <div><label>Type</label><input id="typeColor" type="color" value="#292825"></div>
+      <div><label>Accent</label><input id="accent" type="color" value="#e86f4f"></div>
+    </div>
+  </section>
+
+  <div class="buttons">
+    <button class="primary" id="generate">GENERATE NEW POSTER</button>
+    <button id="reset">RESET</button>
+    <button id="export">EXPORT SVG</button>
+  </div>
+</aside>
+
+<main>
+  <div class="previewLabel">LIVE POSTER PREVIEW</div>
+  <div class="posterWrap">
+    <svg id="poster" viewBox="0 0 700 980" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="collageClip"><rect x="0" y="0" width="440" height="440"/></clipPath>
+        <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
+          <path d="M16 0H0V16" fill="none" stroke="#292825" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect id="posterBg" width="700" height="980" fill="#f2f0e8"/>
+      <g id="rotator" transform="translate(350 345) rotate(-42)">
+        <rect x="-220" y="-220" width="440" height="440" fill="#f2dfaa"/>
+        <g id="collage" transform="translate(-220 -220)" clip-path="url(#collageClip)"></g>
+      </g>
+      <g id="card">
+        <rect x="420" y="575" width="145" height="145" fill="#f2dfaa"/>
+        <text id="cardText" x="438" y="605" font-family="Arial" font-size="12" font-weight="bold" fill="#e86f4f">TM · 6 · 1969</text>
+      </g>
+      <g id="footerGroup" fill="#e86f4f" font-family="Arial">
+        <text id="footer1" x="25" y="915" font-size="9">Typografische Monatsblätter</text>
+        <text id="footer2" x="25" y="929" font-size="8">Schweizer Grafische Mitteilungen</text>
+        <text id="footer3" x="275" y="922" font-size="8">Typographie · Gestaltung · Experiment · Basel</text>
+      </g>
+    </svg>
+  </div>
+  <div class="hint">Generate creates a new controlled typographic collage. Export SVG saves the same vector artwork so you can test and edit it in Illustrator.</div>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let seed=Date.now()%1000000;
+function rng(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}
+function r(a,b){return a+rng()*(b-a)}
+function pick(a){return a[Math.floor(rng()*a.length)]}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[m]))}
+
+function generate(reseed=true){
+  if(reseed) seed=(Date.now()+Math.floor(Math.random()*999999))>>>0;
+  const chars=$('chars').value.split(/\s+/).filter(Boolean);
+  const count=+$('density').value, variation=+$('scale').value, chaos=+$('chaos').value;
+  const ink=$('typeColor').value, paper=$('paper').value, accent=$('accent').value, font=$('font').value;
+  $('posterBg').setAttribute('fill',$('bg').value);
+  $('rotator').setAttribute('transform',`translate(350 345) rotate(${$('rotation').value})`);
+  $('rotator').children[0].setAttribute('fill',paper);
+  $('card').children[0].setAttribute('fill',paper);
+  $('cardText').setAttribute('fill',accent); $('cardText').textContent=$('date').value;
+  $('footerGroup').setAttribute('fill',accent);
+  $('footer1').textContent=$('title').value;
+  $('footer2').textContent=$('subtitle').value;
+  $('footer3').textContent=$('footer').value;
+  $('grid').querySelector('path').setAttribute('stroke',ink);
+
+  let out='';
+  // A few structural anchor forms, then controlled randomized fragments.
+  out += `<rect x="-18" y="118" width="110" height="52" fill="${ink}" transform="rotate(25 37 144)"/>`;
+  out += `<circle cx="285" cy="335" r="62" fill="none" stroke="${ink}" stroke-width="8"/>`;
+  out += `<path d="M30 300 Q95 225 145 320 T255 290" fill="none" stroke="${ink}" stroke-width="9"/>`;
+  const grids=+$('gridAmount').value;
+  if(grids>0) out += `<rect x="330" y="40" width="${45+grids*7}" height="${80+grids*6}" fill="url(#grid)" transform="rotate(12 370 80)"/>`;
+
+  for(let i=0;i<count;i++){
+    const ch=esc(pick(chars.length?chars:['S','2','C','?']));
+    const size=r(34,55+variation*1.25);
+    const x=r(-35,425), y=r(20,470), rot=r(-chaos,chaos);
+    const weight=rng()>.55?'700':'400';
+    const fam=rng()>.72?'Georgia':font;
+    out += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-family="${fam}" font-size="${size.toFixed(1)}" font-weight="${weight}" fill="${ink}" transform="rotate(${rot.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})">${ch}</text>`;
+  }
+  const texture=+$('texture').value;
+  for(let i=0;i<texture*6;i++){
+    const x=r(0,440), y=r(0,440), len=r(4,34);
+    out += `<line x1="${x}" y1="${y}" x2="${x+len}" y2="${y+r(-8,8)}" stroke="${ink}" stroke-width="${r(.5,2.2)}" opacity="${r(.25,.8)}"/>`;
+  }
+  $('collage').innerHTML=out;
+}
+function updateOutputs(){
+  document.querySelectorAll('.rangeRow').forEach(row=>{
+    const input=row.querySelector('input'), out=row.querySelector('output');
+    out.textContent=input.value+(input.id==='rotation'||input.id==='chaos'?'°':'');
+  });
+}
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input',()=>{
+    updateOutputs();
+    // Every control now updates the poster immediately.
+    // Keep the same seed while dragging so sliders visibly transform
+    // the current composition instead of jumping to a totally new one.
+    generate(false);
+  });
+});
+$('generate').addEventListener('click',()=>generate(true));
+$('reset').addEventListener('click',()=>location.reload());
+$('export').addEventListener('click',()=>{
+  const svg=$('poster').cloneNode(true);
+  svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  svg.setAttribute('width','700'); svg.setAttribute('height','980');
+  const data='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
+  const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='typographic-poster.svg'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+updateOutputs(); generate(true);
+</script>
+</body>
+</html>
