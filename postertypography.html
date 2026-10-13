@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typographic Collage Poster Generator</title>
+<style>
+  *{box-sizing:border-box}
+  :root{--ui:#f3f1eb;--ink:#1c1c1a;--line:#cbc8bf}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--ui);color:var(--ink)}
+  .app{display:grid;grid-template-columns:340px minmax(0,1fr);height:100vh;overflow:hidden}
+  aside{padding:26px;border-right:1px solid var(--line);background:#faf9f5;overflow-y:auto;height:100vh;scrollbar-gutter:stable}
+  h1{font-size:20px;letter-spacing:.02em;margin:0 0 4px}
+  .sub{font-size:11px;margin-bottom:26px;color:#666}
+  section{border-top:1px solid var(--line);padding:16px 0}
+  section h2{font-size:10px;letter-spacing:.16em;margin:0 0 12px}
+  label{font-size:11px;display:block;margin:10px 0 5px}
+  input[type=text],select{width:100%;border:1px solid #aaa;background:white;padding:8px;font:12px Arial}
+  input[type=range]{width:100%}
+  .rangeRow{display:grid;grid-template-columns:1fr 38px;align-items:center;gap:8px}
+  .rangeRow output{text-align:right;font-size:10px}
+  .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  input[type=color]{width:100%;height:34px;border:1px solid #aaa;background:white;padding:2px}
+  .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  button{border:1px solid #222;background:#fff;padding:10px;font-weight:bold;font-size:11px;cursor:pointer}
+  button.primary{grid-column:1/-1;background:#1c1c1a;color:white}
+  main{padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:100vh;overflow:hidden;position:sticky;top:0}
+  .previewLabel{width:min(520px,90%);font-size:10px;letter-spacing:.15em;margin-bottom:10px}
+  .posterWrap{height:min(70vh,700px);aspect-ratio:700/980;width:auto;max-width:90%;filter:drop-shadow(0 8px 18px rgba(0,0,0,.12))}.posterWrap svg{height:100%;width:auto;max-width:100%}.seriesBar{width:min(700px,96%);display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.seriesThumb{background:#fff;border:1px solid #bbb;padding:4px;cursor:pointer}.seriesThumb svg{width:100%;height:auto}.seriesLabel{font-size:9px;text-align:center}
+  svg{width:100%;height:auto;display:block;background:#f4f1e9}
+  .hint{font-size:10px;color:#777;margin-top:12px;max-width:520px;line-height:1.4}
+  @media(max-width:800px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>POSTER GENERATOR</h1>
+  <div class="sub">Experimental typographic collage</div>
+
+  <section>
+    <h2>CONTENT</h2>
+    <label>Main word</label><input id="chars" type="text" value="TYPOGRAPHY"><div style="font-size:10px;color:#777;margin-top:5px;line-height:1.35">Each letter is scrambled through a 4 × 4 grid.</div>
+    <label>Event title</label><input id="title" type="text" value="Typografische Monatsblätter">
+    <label>Subtitle</label><input id="subtitle" type="text" value="Schweizer Grafische Mitteilungen">
+    <label>Date / code</label><input id="date" type="text" value="TM · 6 · 1969">
+    <label>Footer</label><input id="footer" type="text" value="Typographie · Gestaltung · Experiment · Basel">
+  </section>
+
+  <section>
+    <h2>TOOLS</h2>
+    <label>Grid size</label>
+    <select id="gridSize">
+      <option value="4">4 × 4</option>
+      <option value="3">3 × 3</option>
+      <option value="5">5 × 5</option>
+    </select>
+    <label>Letter spacing</label><div class="rangeRow"><input id="letterSpacing" type="range" min="-15" max="30" value="0"><output>0</output></div>
+    <label>Opacity</label><div class="rangeRow"><input id="typeOpacity" type="range" min="25" max="100" value="100"><output>100</output></div>
+    <label>Distortion</label><div class="rangeRow"><input id="distortion" type="range" min="0" max="100" value="20"><output>20</output></div>
+    <label><input id="showGrid" type="checkbox"> Show composition grid</label>
+    <label><input id="outlineType" type="checkbox"> Outline typography</label>
+  </section>
+
+  <section>
+    <h2>GENERATOR MODE</h2>
+    <label>Style variation</label>
+    <select id="mode">
+      <option value="scramble">Scrambled Grid</option>
+      <option value="orbit">Orbit Letters</option>
+      <option value="stack">Type Stack</option>
+      <option value="cut">Cut & Crop</option>
+      <option value="wave">Letter Wave</option>
+    </select>
+  </section>
+  <section>
+    <h2>MAIN SHAPE</h2>
+    <label>Shape</label>
+    <select id="mainShape">
+      <option value="square">Square / Diamond</option>
+      <option value="circle">Circle</option>
+      <option value="oval">Oval</option>
+      <option value="triangle">Triangle</option>
+      <option value="hexagon">Hexagon</option>
+      <option value="rectangle">Rectangle</option>
+      <option value="arch">Arch</option>
+      <option value="random">Random on Generate</option>
+    </select>
+    <label>Shape size</label><div class="rangeRow"><input id="mainShapeSize" type="range" min="70" max="125" value="100"><output>100</output></div>
+    <label>Shape X position</label><div class="rangeRow"><input id="shapeX" type="range" min="-100" max="100" value="0"><output>0</output></div>
+    <label>Shape Y position</label><div class="rangeRow"><input id="shapeY" type="range" min="-100" max="100" value="0"><output>0</output></div>
+  </section>
+
+  <section>
+    <h2>COMPOSITION</h2>
+    <label>Collage rotation</label><div class="rangeRow"><input id="rotation" type="range" min="-55" max="-20" value="-43"><output>-42°</output></div>
+    <label>Density</label><div class="rangeRow"><input id="density" type="range" min="8" max="30" value="19"><output>19</output></div>
+    <label>Scale variation</label><div class="rangeRow"><input id="scale" type="range" min="30" max="100" value="72"><output>72</output></div>
+    <label>Rotation chaos</label><div class="rangeRow"><input id="chaos" type="range" min="0" max="180" value="120"><output>120°</output></div>
+    <label>Texture</label><div class="rangeRow"><input id="texture" type="range" min="0" max="20" value="8"><output>8</output></div>
+    <label>Variation</label><div class="rangeRow"><input id="variation" type="range" min="1" max="10" value="8"><output>8</output></div>
+    <label>Letter size</label><div class="rangeRow"><input id="letterSize" type="range" min="55" max="150" value="95"><output>95</output></div>
+    <label>Horizontal spread</label><div class="rangeRow"><input id="spreadX" type="range" min="40" max="140" value="100"><output>100</output></div>
+    <label>Vertical spread</label><div class="rangeRow"><input id="spreadY" type="range" min="40" max="140" value="100"><output>100</output></div>
+    <label>Shape amount</label><div class="rangeRow"><input id="shapeAmount" type="range" min="0" max="12" value="4"><output>4</output></div>
+  </section>
+
+  <section>
+    <h2>STYLE</h2>
+    <label>Typeface</label>
+    <select id="font"><option>Arial</option><option>Helvetica</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option></select>
+    <label>Grid pattern</label><div class="rangeRow"><input id="gridAmount" type="range" min="0" max="10" value="5"><output>5</output></div>
+  </section>
+
+  <section>
+    <h2>COLORS</h2>
+    <label>Palette</label>
+    <select id="palette">
+      <option value="original">Original Cream</option>
+      <option value="blue">Cobalt Blue</option>
+      <option value="red">Signal Red</option>
+      <option value="green">Forest Green</option>
+      <option value="pink">Pink / Burgundy</option>
+      <option value="mono">Black & White</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div class="colors">
+      <div><label>Background</label><input id="bg" type="color" value="#f3f1e9"></div>
+      <div><label>Paper</label><input id="paper" type="color" value="#f0dda8"></div>
+      <div><label>Type</label><input id="typeColor" type="color" value="#302f2b"></div>
+      <div><label>Accent</label><input id="accent" type="color" value="#e66f55"></div>
+    </div>
+  </section>
+
+  <div class="buttons">
+    <button class="primary" id="series">GENERATE 5 POSTERS</button><button class="primary" id="generate">GENERATE ONE POSTER</button>
+    <button id="randomColor">RANDOM COLORS</button>
+    <button id="randomType">RANDOM TYPE</button>
+    <button id="reset">RESET</button>
+    <button id="export">EXPORT SVG</button>
+  </div>
+</aside>
+
+<main>
+  <div class="previewLabel">LIVE POSTER PREVIEW</div>
+  <div class="posterWrap">
+    <svg id="poster" viewBox="0 0 700 980" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="collageClip"><path id="clipShape" d="M0 0H440V440H0Z"/></clipPath>
+        <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
+          <path d="M16 0H0V16" fill="none" stroke="#292825" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect id="posterBg" width="700" height="980" fill="#f2f0e8"/>
+      <g id="rotator" transform="translate(337 332) rotate(-42)">
+        <path id="mainShapePath" d="M-220 -220H220V220H-220Z" fill="#f2dfaa"/>
+        <g id="collage" transform="translate(-220 -220)" clip-path="url(#collageClip)"></g>
+      </g>
+      <g id="card">
+        <rect x="405" y="560" width="125" height="145" fill="#f2dfaa"/>
+        <text id="cardText" x="418" y="586" font-family="Arial" font-size="12" font-weight="bold" fill="#e86f4f">TM · 6 · 1969</text>
+      </g>
+      <g id="footerGroup" fill="#e86f4f" font-family="Arial">
+        <text id="footer1" x="25" y="915" font-size="9">Typografische Monatsblätter</text>
+        <text id="footer2" x="25" y="929" font-size="8">Schweizer Grafische Mitteilungen</text>
+        <text id="footer3" x="235" y="922" font-size="8">Typographie · Gestaltung · Experiment · Basel</text>
+        <text x="500" y="915" font-size="8">Revue suisse de l’imprimerie</text>
+        <text x="500" y="929" font-size="8">Swiss graphic review</text>
+      </g>
+    </svg>
+  </div>
+  <div class="seriesBar" id="seriesBar"></div><div class="hint">Generate a five-poster family, then click any thumbnail to view it large.</div>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let seed=Date.now()%1000000;
+function rng(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}
+function r(a,b){return a+rng()*(b-a)}
+function pick(a){return a[Math.floor(rng()*a.length)]}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[m]))}
+const builtInWords=[
+  'TYPOGRAPHY','DESIGN','POSTER','LETTER','FORM','VISUAL','RHYTHM','MOTION',
+  'STRUCTURE','GRAPHIC','PRINT','SYSTEM','OBJECT','SIGNAL','OFFSET','SHAPE'
+];
+function currentWord(){
+  const typed=$('chars').value.trim().replace(/\s+/g,'');
+  return (typed || pick(builtInWords)).toUpperCase();
+}
+
+const palettes={
+original:['#f3f1e9','#f0dda8','#302f2b','#e66f55'],
+blue:['#f1efe7','#d9e3ff','#152f8f','#ff654d'],
+red:['#f4efe7','#f2c5b8','#9f1d20','#ef5b3f'],
+green:['#f1efe5','#d8dfb7','#173d2a','#e16d45'],
+pink:['#f5eee8','#efc8d3','#641f3b','#f06d52'],
+mono:['#f4f3ef','#dedbd1','#171717','#555555']};
+function applyPalette(){const k=$('palette').value;if(k==='custom')return;const p=palettes[k];$('bg').value=p[0];$('paper').value=p[1];$('typeColor').value=p[2];$('accent').value=p[3];}
+function shapePath(kind, local=false){
+  // Coordinates are either centered (-220..220) or clip-space (0..440).
+  const off=local?220:0;
+  const P=(x,y)=>`${x+off} ${y+off}`;
+  if(kind==='circle') return `M${P(0,-220)} A220 220 0 1 1 ${P(0,220)} A220 220 0 1 1 ${P(0,-220)}Z`;
+  if(kind==='oval') return `M${P(0,-175)} A220 175 0 1 1 ${P(0,175)} A220 175 0 1 1 ${P(0,-175)}Z`;
+  if(kind==='triangle') return `M${P(0,-235)} L${P(235,205)} L${P(-235,205)}Z`;
+  if(kind==='hexagon') return `M${P(-110,-220)} L${P(110,-220)} L${P(220,0)} L${P(110,220)} L${P(-110,220)} L${P(-220,0)}Z`;
+  if(kind==='rectangle') return `M${P(-220,-165)} L${P(220,-165)} L${P(220,165)} L${P(-220,165)}Z`;
+  if(kind==='arch') return `M${P(-205,220)} L${P(-205,0)} A205 205 0 0 1 ${P(205,0)} L${P(205,220)}Z`;
+  return `M${P(-220,-220)} L${P(220,-220)} L${P(220,220)} L${P(-220,220)}Z`;
+}
+let activeMainShape='square';
+function generate(reseed=true){
+  if(reseed) seed=(Date.now()+Math.floor(Math.random()*999999))>>>0;
+  const count=+$('density').value, variation=+$('scale').value, chaos=+$('chaos').value;
+  const ink=$('typeColor').value, paper=$('paper').value, accent=$('accent').value, font=$('font').value;
+  $('posterBg').setAttribute('fill',$('bg').value);
+  let chosen=$('mainShape').value;
+  if(chosen==='random' && reseed) activeMainShape=pick(['square','circle','oval','triangle','hexagon','rectangle','arch']);
+  else if(chosen!=='random') activeMainShape=chosen;
+  const shScale=+$('mainShapeSize').value/100;
+  const shX=+$('shapeX').value, shY=+$('shapeY').value;
+  $('rotator').setAttribute('transform',`translate(${337+shX} ${332+shY}) rotate(${$('rotation').value}) scale(${shScale})`);
+  $('mainShapePath').setAttribute('d',shapePath(activeMainShape,false));
+  $('mainShapePath').setAttribute('fill',paper);
+  $('clipShape').setAttribute('d',shapePath(activeMainShape,true));
+  $('card').children[0].setAttribute('fill',paper);
+  $('cardText').setAttribute('fill',accent); $('cardText').textContent=$('date').value;
+  $('footerGroup').setAttribute('fill',accent);
+  $('footer1').textContent=$('title').value;
+  $('footer2').textContent=$('subtitle').value;
+  $('footer3').textContent=$('footer').value;
+  $('grid').querySelector('path').setAttribute('stroke',ink);
+
+  let out='';
+  const word=currentWord();
+  const letters=word.split('');
+  const v=+$('variation').value;
+
+  const mode=$('mode').value, sizeBase=+$('letterSize').value;
+  const sx=+$('spreadX').value/100, sy=+$('spreadY').value/100;
+  const gridN=+$('gridSize').value, cellSize=440/gridN;
+  const spacing=+$('letterSpacing').value, opacity=+$('typeOpacity').value/100;
+  const distortion=+$('distortion').value/100;
+  const cells=[];
+  for(let row=0;row<gridN;row++)for(let col=0;col<gridN;col++)cells.push({cx:col*cellSize+cellSize/2,cy:row*cellSize+cellSize/2});
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  if($('showGrid').checked){
+    for(let g=1;g<gridN;g++){
+      out+=`<line x1="${g*cellSize}" y1="0" x2="${g*cellSize}" y2="440" stroke="${ink}" stroke-width=".7" opacity=".22"/>`;
+      out+=`<line x1="0" y1="${g*cellSize}" x2="440" y2="${g*cellSize}" stroke="${ink}" stroke-width=".7" opacity=".22"/>`;
+    }
+  }
+  letters.forEach((letter,i)=>{
+    const c=cells[i%cells.length]; let x=220+(c.cx-220)*sx,y=220+(c.cy-220)*sy;
+    let size=sizeBase*r(.62,1.18),rot=r(-Math.min(chaos,80),Math.min(chaos,80));
+    if(mode==='orbit'){const a=i/Math.max(letters.length,1)*Math.PI*2+r(-.2,.2),rad=r(95,190);x=220+Math.cos(a)*rad*sx;y=220+Math.sin(a)*rad*sy;rot=a*180/Math.PI+90;size=sizeBase*r(.55,1.05);}
+    else if(mode==='stack'){x=220+r(-45,45)*sx;y=55+i*(330/Math.max(letters.length-1,1))*sy;rot=r(-18,18);size=sizeBase*r(.75,1.35);}
+    else if(mode==='cut'){x=c.cx+r(-55,55);y=c.cy+r(5,55);size=sizeBase*r(1,1.65);rot=r(-45,45);}
+    else if(mode==='wave'){x=45+(i%8)*50*sx;y=220+Math.sin(i*.95)*115*sy+r(-15,15);rot=Math.cos(i*.95)*32;size=sizeBase*r(.6,1.15);}
+    else{x+=r(-28,28);y+=r(18,48);}
+    const fam=rng()>.62?'Georgia':font,weight=rng()>.42?'700':'400';
+    x+=r(-35,35)*distortion; y+=r(-35,35)*distortion;
+    const outline=$('outlineType').checked;
+    out+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-family="${fam}" font-size="${size.toFixed(1)}" font-weight="${weight}" letter-spacing="${spacing}" fill="${outline?'none':ink}" stroke="${outline?ink:'none'}" stroke-width="${outline?2:0}" opacity="${opacity}" text-anchor="middle" transform="rotate(${rot.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})">${esc(letter)}</text>`;
+  });
+  const shapeAmount=+$('shapeAmount').value;
+  for(let q=0;q<shapeAmount;q++){const qx=r(-20,410),qy=r(20,410);if(rng()>.45)out+=`<rect x="${qx}" y="${qy}" width="${r(18,90)}" height="${r(8,58)}" fill="${ink}" transform="rotate(${r(-55,55)} ${qx} ${qy})"/>`;else out+=`<circle cx="${qx}" cy="${qy}" r="${r(5,28)}" fill="none" stroke="${ink}" stroke-width="${r(2,9)}"/>`;}
+  // A few reference-inspired abstract interruptions.
+  if(rng()>.25) out+=`<path d="M150 80 C130 115 150 140 185 116 C218 91 226 132 198 154 C176 171 150 158 142 184 C135 208 176 216 204 196" fill="none" stroke="${ink}" stroke-width="${r(7,13)}" stroke-linecap="round" opacity=".9"/>`;
+  if(rng()>.35) out+=`<rect x="${r(250,330)}" y="${r(120,220)}" width="${r(55,100)}" height="${r(35,75)}" fill="${ink}" transform="rotate(${r(-25,25)} 330 180)"/>`;
+
+  const grids=+$('gridAmount').value;
+  if(grids>0 && rng()>.25){
+    out+=`<rect x="${r(300,350)}" y="${r(25,75)}" width="${55+grids*6}" height="${55+grids*6}" fill="url(#grid)" transform="rotate(${r(-12,16)} 370 90)" opacity=".7"/>`;
+  }
+
+  // Sparse print scratches, mostly near edges.
+  const texture=+$('texture').value;
+  for(let i=0;i<texture*4;i++){
+    const x=rng()>.5?r(330,440):r(0,120), y=r(70,400), len=r(6,42);
+    out+=`<line x1="${x}" y1="${y}" x2="${x+len}" y2="${y+r(-10,10)}" stroke="${ink}" stroke-width="${r(.4,1.8)}" opacity="${r(.18,.58)}"/>`;
+  }
+  $('collage').innerHTML=out;
+}
+function updateOutputs(){
+  document.querySelectorAll('.rangeRow').forEach(row=>{
+    const input=row.querySelector('input'), out=row.querySelector('output');
+    out.textContent=input.value+(input.id==='rotation'||input.id==='chaos'?'°':'');
+  });
+}
+$('palette').addEventListener('change',()=>{applyPalette();generate(false);});
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input',()=>{
+    if(['bg','paper','typeColor','accent'].includes(el.id)) $('palette').value='custom';
+    updateOutputs();
+    // Every control now updates the poster immediately.
+    // Keep the same seed while dragging so sliders visibly transform
+    // the current composition instead of jumping to a totally new one.
+    generate(false);
+  });
+});
+$('generate').addEventListener('click',()=>{
+  const base=+$('rotation').value;
+  const v=+$('variation').value;
+  const next=Math.max(-55,Math.min(-20,Math.round(base+r(-v*.8,v*.8))));
+  $('rotation').value=next;
+  updateOutputs();
+  generate(true);
+});
+const seriesPalettes=['original','blue','red','green','pink'];
+const seriesFonts=['Arial','Helvetica','Georgia','Times New Roman','Courier New'];
+const seriesWords=['TYPOGRAPHY','DESIGN','LETTER','FORM','RHYTHM','GRAPHIC','PRINT','MOTION'];
+let posterSeries=[];
+function capturePoster(){return new XMLSerializer().serializeToString($('poster').cloneNode(true));}
+function showSeries(){const bar=$('seriesBar');bar.innerHTML='';posterSeries.forEach((svgText,i)=>{const b=document.createElement('button');b.className='seriesThumb';b.innerHTML=svgText+`<div class="seriesLabel">POSTER ${i+1}</div>`;b.onclick=()=>{const d=new DOMParser().parseFromString(svgText,'image/svg+xml').documentElement;$('poster').innerHTML=d.innerHTML;};bar.appendChild(b);});}
+$('series').addEventListener('click',()=>{posterSeries=[];const modes=['scramble','cut','stack','scramble','wave'];for(let i=0;i<5;i++){$('chars').value=seriesWords[i];$('font').value=seriesFonts[i];$('palette').value=seriesPalettes[i];applyPalette();$('mode').value=modes[i];$('rotation').value=-46+i*2;$('letterSize').value=82+i*7;$('shapeAmount').value=2+(i%4);updateOutputs();generate(true);posterSeries.push(capturePoster());}showSeries();});
+$('randomColor').addEventListener('click',()=>{
+  const choices=['original','blue','red','green','pink','mono'];
+  $('palette').value=pick(choices); applyPalette(); generate(false);
+});
+$('randomType').addEventListener('click',()=>{
+  const words=['TYPOGRAPHY','DESIGN','POSTER','GRAPHIC','MOTION','RHYTHM','LETTER','SYSTEM'];
+  $('chars').value=pick(words); generate(true);
+});
+$('reset').addEventListener('click',()=>location.reload());
+$('export').addEventListener('click',()=>{
+  const svg=$('poster').cloneNode(true);
+  svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  svg.setAttribute('width','700'); svg.setAttribute('height','980');
+  const data='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
+  const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='typographic-poster.svg'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+updateOutputs(); generate(true);
+</script>
+</body>
+</html>
