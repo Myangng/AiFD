@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typographic Collage · Live Weather Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Recursive:CASL,slnt,wght@0..1,-15..0,300..1000&display=swap');
+  *{box-sizing:border-box}
+  :root{--ui:#f3f1eb;--ink:#1c1c1a;--line:#cbc8bf}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--ui);color:var(--ink)}
+  .app{display:grid;grid-template-columns:340px minmax(0,1fr);height:100vh;overflow:hidden}
+  aside{padding:26px;border-right:1px solid var(--line);background:#faf9f5;overflow-y:auto;height:100vh;scrollbar-gutter:stable}
+  h1{font-size:20px;letter-spacing:.02em;margin:0 0 4px}
+  .sub{font-size:11px;margin-bottom:26px;color:#666}
+  section{border-top:1px solid var(--line);padding:16px 0}
+  section h2{font-size:10px;letter-spacing:.16em;margin:0 0 12px}
+  label{font-size:11px;display:block;margin:10px 0 5px}
+  input[type=text],select{width:100%;border:1px solid #aaa;background:white;padding:8px;font:12px Arial}
+  input[type=range]{width:100%}
+  .rangeRow{display:grid;grid-template-columns:1fr 38px;align-items:center;gap:8px}
+  .rangeRow output{text-align:right;font-size:10px}
+  .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  input[type=color]{width:100%;height:34px;border:1px solid #aaa;background:white;padding:2px}
+  .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+  button{border:1px solid #222;background:#fff;padding:10px;font-weight:bold;font-size:11px;cursor:pointer}
+  button.primary{grid-column:1/-1;background:#1c1c1a;color:white}
+  main{padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:100vh;overflow:hidden;position:sticky;top:0}
+  .previewLabel{width:min(520px,90%);font-size:10px;letter-spacing:.15em;margin-bottom:10px}
+  .posterWrap{height:min(70vh,700px);aspect-ratio:700/980;width:auto;max-width:90%;filter:drop-shadow(0 8px 18px rgba(0,0,0,.12))}.posterWrap svg{height:100%;width:auto;max-width:100%}.seriesBar{width:min(700px,96%);display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.seriesThumb{background:#fff;border:1px solid #bbb;padding:4px;cursor:pointer}.seriesThumb svg{width:100%;height:auto}.seriesLabel{font-size:9px;text-align:center}
+  .weather-mini{border-top:1px solid var(--line);padding:15px 0 10px;font-size:11px}
+  .weather-mini h2{font-size:10px;letter-spacing:.16em;margin:0 0 12px}
+  .weather-search{display:flex;gap:6px}.weather-search input{min-width:0;flex:1}.weather-search button{background:#1c1c1a;color:white}
+  .weather-reading{display:flex;align-items:baseline;gap:10px;margin:12px 0 5px}.weather-reading strong{font-size:27px;letter-spacing:-.06em}
+  .weather-details{font-size:10px;color:#555;line-height:1.6}.weather-details span{margin-right:12px}
+  #weatherStatus{font-size:10px;color:#666;margin-top:8px;line-height:1.4}
+  .weather-toggle{display:flex;align-items:center;gap:7px;margin:10px 0 0}
+  .weather-toggle input{margin:0}
+  .previewLabel{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  #weatherPreview{font-size:9px;letter-spacing:.04em;text-align:right;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .weather-explain{font-size:10px;line-height:1.55;color:#555;margin:10px 0 0}
+  .weather-explain strong{color:#222}
+  .weather-mini .weather-controls{display:flex;gap:8px;align-items:center;margin-top:9px}
+  .weather-mini .weather-controls label{margin:0}
+  .weather-mini .weather-controls select{max-width:140px}
+  .motion-on #weatherAtmosphere .wind-mark{animation:windDrift 2.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+  .motion-on #weatherAtmosphere .rain-mark{animation:rainFall 1.4s linear infinite;transform-box:fill-box}
+  @keyframes windDrift{to{transform:translate(12px,-3px)}}
+  @keyframes rainFall{to{transform:translate(0px,17px);opacity:.15}}
+  @media(prefers-reduced-motion:reduce){.motion-on #weatherAtmosphere *{animation:none!important}}
+  svg{width:100%;height:auto;display:block;background:#f4f1e9}
+  .hint{font-size:10px;color:#777;margin-top:12px;max-width:520px;line-height:1.4}
+  @media(max-width:800px){.app{display:flex;flex-direction:column;height:auto;overflow:visible}aside{height:auto;max-height:55vh;border-right:0;border-bottom:1px solid var(--line)}main{height:auto;min-height:65vh;position:static;overflow:visible}.posterWrap{height:min(65vh,620px)}.seriesBar{gap:3px}}
+#poster text.variableType{transition:font-variation-settings .1s ease-out}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>POSTER GENERATOR</h1>
+  <div class="sub">Experimental typographic collage</div>
+  <div class="weather-mini">
+    <h2>LIVE WEATHER</h2>
+    <form class="weather-search" id="weatherForm"><input id="weatherQuery" type="text" value="New York" placeholder="City or country" aria-label="City or country"><button type="submit">SEARCH</button></form>
+    <div class="weather-reading"><strong id="weatherTemp">—°F</strong><span id="weatherCondition">Loading weather…</span></div>
+    <div class="weather-details"><span id="weatherWind">Wind —</span><span id="weatherRain">Rain —</span></div>
+    <div class="weather-details" id="weatherPlace">New York, United States</div>
+    <div id="weatherStatus">Connecting…</div>
+    <label class="weather-toggle"><input id="weatherReact" type="checkbox" checked> Weather affects poster design</label>
+    <div class="weather-controls"><label for="weatherIntensity">Weather impact</label><select id="weatherIntensity"><option value="1">Subtle</option><option value="2" selected>Expressive</option><option value="3">Dramatic</option></select></div>
+    <div class="weather-demo" style="border-top:1px solid #cbc8bf;padding-top:12px;margin-top:12px">
+      <label style="font-weight:bold;letter-spacing:.07em">COMPARE WEATHER DESIGNS</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0">
+        <button type="button" id="demoHot">HOT + SUNNY</button>
+        <button type="button" id="demoWind">WINDY</button>
+        <button type="button" id="demoRain">RAINY</button>
+      </div>
+      <button type="button" id="demoLive" style="width:100%">RETURN TO LIVE WEATHER</button>
+      <div id="demoNotice" style="font-size:11px;color:#666;margin-top:7px">Compare sample conditions, then return to real weather.</div>
+    </div>
+    <label class="weather-toggle"><input id="weatherMotion" type="checkbox" checked> Animate wind and precipitation</label>
+    <div class="weather-explain" id="weatherExplain">Temperature → type scale · Wind → letter rotation / lines · Rain → falling marks. Original 5 palettes remain unchanged.</div>
+  </div>
+
+  <section>
+    <h2>CONTENT</h2>
+    <label>Main word</label><input id="chars" type="text" value="TYPOGRAPHY"><div style="font-size:10px;color:#777;margin-top:5px;line-height:1.35">Each letter is scrambled through a 4 × 4 grid.</div>
+    <label>Event title</label><input id="title" type="text" value="Typografische Monatsblätter">
+    <label>Subtitle</label><input id="subtitle" type="text" value="Schweizer Grafische Mitteilungen">
+    <label>Date / code</label><input id="date" type="text" value="TM · 6 · 1969">
+    <label>Footer</label><input id="footer" type="text" value="Typographie · Gestaltung · Experiment · Basel">
+  </section>
+
+  <section>
+    <h2>TOOLS</h2>
+    <label>Grid size</label>
+    <select id="gridSize">
+      <option value="4">4 × 4</option>
+      <option value="3">3 × 3</option>
+      <option value="5">5 × 5</option>
+    </select>
+    <label>Letter spacing</label><div class="rangeRow"><input id="letterSpacing" type="range" min="-15" max="30" value="0"><output>0</output></div>
+    <label>Opacity</label><div class="rangeRow"><input id="typeOpacity" type="range" min="25" max="100" value="100"><output>100</output></div>
+    <label>Distortion</label><div class="rangeRow"><input id="distortion" type="range" min="0" max="100" value="20"><output>20</output></div>
+    <label><input id="showGrid" type="checkbox"> Show composition grid</label>
+    <label><input id="outlineType" type="checkbox"> Outline typography</label>
+  </section>
+
+  <section>
+    <h2>GENERATOR MODE</h2>
+    <label>Style variation</label>
+    <select id="mode">
+      <option value="scramble">Scrambled Grid</option>
+      <option value="orbit">Orbit Letters</option>
+      <option value="stack">Type Stack</option>
+      <option value="cut">Cut & Crop</option>
+      <option value="wave">Letter Wave</option>
+    </select>
+  </section>
+  <section>
+    <h2>SPRINT A · WEATHER VARIABLE TYPE</h2>
+    <label><input id="useVariable" type="checkbox" checked> Use Recursive variable font</label>
+    <label>Weight · wght</label><div class="rangeRow"><input id="varWeight" type="range" min="300" max="1000" value="650"><output>650</output></div>
+    <label>Casual · CASL</label><div class="rangeRow"><input id="varCasual" type="range" min="0" max="100" value="35"><output>35</output></div>
+    <label>Slant · slnt</label><div class="rangeRow"><input id="varSlant" type="range" min="-15" max="0" value="0"><output>0</output></div>
+    <label>Variable-font data</label>
+    <select id="axisStream"><option value="weather">Live weather → font</option><option value="mouse">Mouse X → CASL</option><option value="manual">Manual sliders</option></select>
+    <div id="axisReadout" style="font-size:10px;color:#777;margin-top:7px;line-height:1.4">Weather controls variable typography.</div>
+    <div style="font-size:10px;color:#777;margin-top:7px;line-height:1.4">Temperature controls weight; wind controls CASL, turning the live weather feed into expressive typography.</div>
+  </section>
+
+  <section>
+    <h2>MAIN SHAPE</h2>
+    <label>Shape</label>
+    <select id="mainShape">
+      <option value="square">Square / Diamond</option>
+      <option value="circle">Circle</option>
+      <option value="oval">Oval</option>
+      <option value="triangle">Triangle</option>
+      <option value="hexagon">Hexagon</option>
+      <option value="rectangle">Rectangle</option>
+      <option value="arch">Arch</option>
+      <option value="random">Random on Generate</option>
+    </select>
+    <label>Shape size</label><div class="rangeRow"><input id="mainShapeSize" type="range" min="70" max="125" value="100"><output>100</output></div>
+    <label>Shape X position</label><div class="rangeRow"><input id="shapeX" type="range" min="-100" max="100" value="0"><output>0</output></div>
+    <label>Shape Y position</label><div class="rangeRow"><input id="shapeY" type="range" min="-100" max="100" value="0"><output>0</output></div>
+  </section>
+
+  <section>
+    <h2>COMPOSITION</h2>
+    <label>Collage rotation</label><div class="rangeRow"><input id="rotation" type="range" min="-55" max="-20" value="-43"><output>-42°</output></div>
+    <label>Density</label><div class="rangeRow"><input id="density" type="range" min="8" max="30" value="19"><output>19</output></div>
+    <label>Scale variation</label><div class="rangeRow"><input id="scale" type="range" min="30" max="100" value="72"><output>72</output></div>
+    <label>Rotation chaos</label><div class="rangeRow"><input id="chaos" type="range" min="0" max="180" value="120"><output>120°</output></div>
+    <label>Texture</label><div class="rangeRow"><input id="texture" type="range" min="0" max="20" value="8"><output>8</output></div>
+    <label>Variation</label><div class="rangeRow"><input id="variation" type="range" min="1" max="10" value="8"><output>8</output></div>
+    <label>Letter size</label><div class="rangeRow"><input id="letterSize" type="range" min="55" max="150" value="95"><output>95</output></div>
+    <label>Horizontal spread</label><div class="rangeRow"><input id="spreadX" type="range" min="40" max="140" value="100"><output>100</output></div>
+    <label>Vertical spread</label><div class="rangeRow"><input id="spreadY" type="range" min="40" max="140" value="100"><output>100</output></div>
+    <label>Shape amount</label><div class="rangeRow"><input id="shapeAmount" type="range" min="0" max="12" value="4"><output>4</output></div>
+  </section>
+
+  <section>
+    <h2>STYLE</h2>
+    <label>Typeface</label>
+    <select id="font"><option>Arial</option><option>Helvetica</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option></select>
+    <label>Grid pattern</label><div class="rangeRow"><input id="gridAmount" type="range" min="0" max="10" value="5"><output>5</output></div>
+  </section>
+
+  <section>
+    <h2>COLORS</h2>
+    <label>Palette</label>
+    <select id="palette">
+      <option value="original">Original Cream</option>
+      <option value="blue">Cobalt Blue</option>
+      <option value="red">Signal Red</option>
+      <option value="green">Forest Green</option>
+      <option value="pink">Pink / Burgundy</option>
+      <option value="mono">Black & White</option>
+      <option value="custom">Custom</option>
+    </select>
+    <div class="colors">
+      <div><label>Background</label><input id="bg" type="color" value="#f3f1e9"></div>
+      <div><label>Paper</label><input id="paper" type="color" value="#f0dda8"></div>
+      <div><label>Type</label><input id="typeColor" type="color" value="#302f2b"></div>
+      <div><label>Accent</label><input id="accent" type="color" value="#e66f55"></div>
+    </div>
+  </section>
+
+  <div class="buttons">
+    <button class="primary" id="series">GENERATE 5 POSTERS</button><button class="primary" id="generate">GENERATE ONE POSTER</button>
+    <button id="randomColor">RANDOM COLORS</button>
+    <button id="randomType">RANDOM TYPE</button>
+    <button id="reset">RESET</button>
+    <button id="export">EXPORT SVG</button>
+    <button class="primary" id="exportWebsite">EXPORT LIVE WEBSITE (.HTML)</button>
+  </div>
+</aside>
+
+<main>
+  <div class="previewLabel"><span>LIVE POSTER PREVIEW</span><span id="weatherPreview">WEATHER LOADING…</span></div>
+  <div class="posterWrap">
+    <svg id="poster" viewBox="0 0 700 980" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="collageClip"><path id="clipShape" d="M0 0H440V440H0Z"/></clipPath>
+        <clipPath id="weatherClipCentered"><path id="weatherClipPath" d="M-220 -220H220V220H-220Z"/></clipPath>
+        <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
+          <path d="M16 0H0V16" fill="none" stroke="#292825" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect id="posterBg" width="700" height="980" fill="#f2f0e8"/>
+      <g id="rotator" transform="translate(337 332) rotate(-42)">
+        <path id="mainShapePath" d="M-220 -220H220V220H-220Z" fill="#f2dfaa"/>
+        <g id="collage" transform="translate(-220 -220)" clip-path="url(#collageClip)"></g>
+        <g id="weatherAtmosphere" clip-path="url(#weatherClipCentered)" pointer-events="none"></g>
+        <!-- Weather typography blends directly into the shape without a background rectangle. -->
+        <g id="weatherOnShape" style="display:none" pointer-events="none">
+          <text id="weatherLabelTemp" x="0" y="90" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="69" font-weight="900" fill="#302f2b" paint-order="stroke" stroke="#f0dda8" stroke-width="8" stroke-linejoin="round">47°F</text>
+          <text id="weatherLabelCity" x="0" y="124" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="700" fill="#302f2b" paint-order="stroke" stroke="#f0dda8" stroke-width="8" stroke-linejoin="round">CHINA · CLEAR SKY</text>
+        </g>
+      </g>
+      <g id="card">
+        <rect x="405" y="560" width="125" height="145" fill="#f2dfaa"/>
+        <text id="cardText" x="418" y="586" font-family="Arial" font-size="12" font-weight="bold" fill="#e86f4f">TM · 6 · 1969</text>
+      </g>
+      <g id="footerGroup" fill="#e86f4f" font-family="Arial">
+        <text id="footer1" x="25" y="915" font-size="9">Typografische Monatsblätter</text>
+        <text id="footer2" x="25" y="929" font-size="8">Schweizer Grafische Mitteilungen</text>
+        <text id="footer3" x="235" y="922" font-size="8">Typographie · Gestaltung · Experiment · Basel</text>
+        <text x="500" y="915" font-size="8">Revue suisse de l’imprimerie</text>
+        <text x="500" y="929" font-size="8">Swiss graphic review</text>
+      </g>
+    </svg>
+  </div>
+  <div class="seriesBar" id="seriesBar"></div><div class="hint">Generate five color variations from the current weather. Use EXPORT LIVE WEBSITE to save a separate interactive, weather-updating website. Click a thumbnail to view it large; use Generate again after changing locations.</div>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let seed=Date.now()%1000000;
+function rng(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}
+function r(a,b){return a+rng()*(b-a)}
+function pick(a){return a[Math.floor(rng()*a.length)]}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[m]))}
+const builtInWords=[
+  'TYPOGRAPHY','DESIGN','POSTER','LETTER','FORM','VISUAL','RHYTHM','MOTION',
+  'STRUCTURE','GRAPHIC','PRINT','SYSTEM','OBJECT','SIGNAL','OFFSET','SHAPE'
+];
+function currentWord(){
+  const typed=$('chars').value.trim().replace(/\s+/g,'');
+  return (typed || pick(builtInWords)).toUpperCase();
+}
+
+const palettes={
+original:['#f3f1e9','#f0dda8','#302f2b','#e66f55'],
+blue:['#f1efe7','#d9e3ff','#152f8f','#ff654d'],
+red:['#f4efe7','#f2c5b8','#9f1d20','#ef5b3f'],
+green:['#f1efe5','#d8dfb7','#173d2a','#e16d45'],
+pink:['#f5eee8','#efc8d3','#641f3b','#f06d52'],
+mono:['#f4f3ef','#dedbd1','#171717','#555555']};
+function applyPalette(){const k=$('palette').value;if(k==='custom')return;const p=palettes[k];$('bg').value=p[0];$('paper').value=p[1];$('typeColor').value=p[2];$('accent').value=p[3];}
+// SPRINT A DESIGN INTENT: live weather drives Recursive variable axes.
+// Temperature changes weight and wind changes CASL, translating environmental data into expressive type.
+function variableValues(){
+ let w=+$('varWeight').value,c=+$('varCasual').value/100,sl=+$('varSlant').value;
+ if($('axisStream').value==='weather'&&weatherData){w=Math.max(300,Math.min(1000,300+((weatherData.temp+10)/120)*700));c=Math.max(0,Math.min(1,weatherData.wind/25));sl=-Math.max(0,Math.min(15,weatherData.wind*.6));$('varWeight').value=Math.round(w);$('varCasual').value=Math.round(c*100);$('varSlant').value=Math.round(sl);}
+ return {wght:w,casl:c,slnt:sl};
+}
+function applyVariableType(){const v=variableValues();document.documentElement.style.setProperty('--font-axis-val',v.casl);document.querySelectorAll('#poster text.variableType').forEach(t=>t.style.fontVariationSettings=`"wght" ${v.wght}, "CASL" ${v.casl}, "slnt" ${v.slnt}`);if($('axisStream').value==='weather'&&weatherData)$('axisReadout').textContent=`${Math.round(weatherData.temp)}°F → wght ${Math.round(v.wght)} · wind ${Number(weatherData.wind).toFixed(1)} mph → CASL ${v.casl.toFixed(2)}`;else $('axisReadout').textContent=`wght ${Math.round(v.wght)} · CASL ${v.casl.toFixed(2)} · slnt ${v.slnt}`;}
+function shapePath(kind, local=false){
+  // Coordinates are either centered (-220..220) or clip-space (0..440).
+  const off=local?220:0;
+  const P=(x,y)=>`${x+off} ${y+off}`;
+  if(kind==='circle') return `M${P(0,-220)} A220 220 0 1 1 ${P(0,220)} A220 220 0 1 1 ${P(0,-220)}Z`;
+  if(kind==='oval') return `M${P(0,-175)} A220 175 0 1 1 ${P(0,175)} A220 175 0 1 1 ${P(0,-175)}Z`;
+  if(kind==='triangle') return `M${P(0,-235)} L${P(235,205)} L${P(-235,205)}Z`;
+  if(kind==='hexagon') return `M${P(-110,-220)} L${P(110,-220)} L${P(220,0)} L${P(110,220)} L${P(-110,220)} L${P(-220,0)}Z`;
+  if(kind==='rectangle') return `M${P(-220,-165)} L${P(220,-165)} L${P(220,165)} L${P(-220,165)}Z`;
+  if(kind==='arch') return `M${P(-205,220)} L${P(-205,0)} A205 205 0 0 1 ${P(205,0)} L${P(205,220)}Z`;
+  return `M${P(-220,-220)} L${P(220,-220)} L${P(220,220)} L${P(-220,220)}Z`;
+}
+let activeMainShape='square';
+function generate(reseed=true){
+  if(reseed) seed=(Date.now()+Math.floor(Math.random()*999999))>>>0;
+  const count=+$('density').value, variation=+$('scale').value, chaos=+$('chaos').value;
+  const ink=$('typeColor').value, paper=$('paper').value, accent=$('accent').value, font=$('font').value;
+  $('posterBg').setAttribute('fill',$('bg').value);
+  let chosen=$('mainShape').value;
+  if(chosen==='random' && reseed) activeMainShape=pick(['square','circle','oval','triangle','hexagon','rectangle','arch']);
+  else if(chosen!=='random') activeMainShape=chosen;
+  const shScale=+$('mainShapeSize').value/100;
+  const shX=+$('shapeX').value, shY=+$('shapeY').value;
+  $('rotator').setAttribute('transform',`translate(${337+shX} ${332+shY}) rotate(${$('rotation').value}) scale(${shScale})`);
+  $('mainShapePath').setAttribute('d',shapePath(activeMainShape,false));
+  $('mainShapePath').setAttribute('fill',paper);
+  $('clipShape').setAttribute('d',shapePath(activeMainShape,true));
+  $('weatherClipPath').setAttribute('d',shapePath(activeMainShape,false));
+  $('card').children[0].setAttribute('fill',paper);
+  $('cardText').setAttribute('fill',accent); $('cardText').textContent=$('date').value;
+  $('footerGroup').setAttribute('fill',accent);
+  $('footer1').textContent=$('title').value;
+  $('footer2').textContent=$('subtitle').value;
+  $('footer3').textContent=$('footer').value;
+  $('grid').querySelector('path').setAttribute('stroke',ink);
+  // Keep the weather reading legible on every original poster palette.
+  const weatherLabel=$('weatherOnShape');
+  weatherLabel.style.display=weatherData?'':'none';
+  if(weatherData){
+    $('weatherLabelTemp').setAttribute('stroke',paper);
+    $('weatherLabelCity').setAttribute('stroke',paper);
+    $('weatherLabelTemp').setAttribute('fill',ink);
+    $('weatherLabelCity').setAttribute('fill',ink);
+    $('weatherLabelTemp').textContent=Math.round(weatherData.temp)+'°F';
+    const place=(activeLocation?.name||'WEATHER').toUpperCase();
+    const condition=(weatherCodes[weatherData.code]||'CURRENT WEATHER').toUpperCase();
+    $('weatherLabelCity').textContent=(place.length>19?place.slice(0,18)+'…':place)+' · '+condition;
+    $('weatherLabelCity').setAttribute('font-size', Math.max(8, Math.min(12, 370 / Math.max(1,$('weatherLabelCity').textContent.length))));
+    // Counter-rotate the reading so it stays horizontal as the collage turns.
+    weatherLabel.setAttribute('transform',`rotate(${-Number($('rotation').value)})`);
+  }
+
+  let out='';
+  const word=currentWord();
+  const letters=word.split('');
+  const v=+$('variation').value;
+
+  const weatherActive=Boolean(weatherData && $('weatherReact').checked);
+  const impact=Number($('weatherIntensity').value);
+  const tempFactor=weatherActive?Math.max(.60,Math.min(1.65,1+(weatherData.temp-60)*.008*impact)):1;
+  const windFactor=weatherActive?Math.min(1,weatherData.wind/22)*impact:0;
+  const mode=$('mode').value, sizeBase=+$('letterSize').value*tempFactor;
+  const sx=+$('spreadX').value/100, sy=+$('spreadY').value/100;
+  const gridN=+$('gridSize').value, cellSize=440/gridN;
+  const spacing=+$('letterSpacing').value, opacity=+$('typeOpacity').value/100;
+  const distortion=+$('distortion').value/100;
+  const cells=[];
+  for(let row=0;row<gridN;row++)for(let col=0;col<gridN;col++)cells.push({cx:col*cellSize+cellSize/2,cy:row*cellSize+cellSize/2});
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+  if($('showGrid').checked){
+    for(let g=1;g<gridN;g++){
+      out+=`<line x1="${g*cellSize}" y1="0" x2="${g*cellSize}" y2="440" stroke="${ink}" stroke-width=".7" opacity=".22"/>`;
+      out+=`<line x1="0" y1="${g*cellSize}" x2="440" y2="${g*cellSize}" stroke="${ink}" stroke-width=".7" opacity=".22"/>`;
+    }
+  }
+  letters.forEach((letter,i)=>{
+    const c=cells[i%cells.length]; let x=220+(c.cx-220)*sx,y=220+(c.cy-220)*sy;
+    let size=sizeBase*r(.62,1.18),rot=r(-Math.min(chaos,80),Math.min(chaos,80));
+    if(mode==='orbit'){const a=i/Math.max(letters.length,1)*Math.PI*2+r(-.2,.2),rad=r(95,190);x=220+Math.cos(a)*rad*sx;y=220+Math.sin(a)*rad*sy;rot=a*180/Math.PI+90;size=sizeBase*r(.55,1.05);}
+    else if(mode==='stack'){x=220+r(-45,45)*sx;y=55+i*(330/Math.max(letters.length-1,1))*sy;rot=r(-18,18);size=sizeBase*r(.75,1.35);}
+    else if(mode==='cut'){x=c.cx+r(-55,55);y=c.cy+r(5,55);size=sizeBase*r(1,1.65);rot=r(-45,45);}
+    else if(mode==='wave'){x=45+(i%8)*50*sx;y=220+Math.sin(i*.95)*115*sy+r(-15,15);rot=Math.cos(i*.95)*32;size=sizeBase*r(.6,1.15);}
+    else{x+=r(-28,28);y+=r(18,48);}
+    if(weatherActive){rot += windFactor*22*Math.sin(i*2.3); x+=windFactor*17*Math.sin(i*1.7);}
+    const variableOn=$('useVariable').checked; const fam=variableOn?'Recursive':(rng()>.62?'Georgia':font),weight=rng()>.42?'700':'400'; const vv=variableValues();
+    x+=r(-35,35)*distortion; y+=r(-35,35)*distortion; const outline=$('outlineType').checked;
+    const fv=variableOn?`font-variation-settings:&quot;wght&quot; ${vv.wght}, &quot;CASL&quot; ${vv.casl}, &quot;slnt&quot; ${vv.slnt};`:'';
+    out+=`<text class="${variableOn?'variableType':''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-family="${fam}" font-size="${size.toFixed(1)}" font-weight="${weight}" letter-spacing="${spacing}" fill="${outline?'none':ink}" stroke="${outline?ink:'none'}" stroke-width="${outline?2:0}" opacity="${opacity}" style="${fv}" text-anchor="middle" transform="rotate(${rot.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})">${esc(letter)}</text>`;
+  });
+  const shapeAmount=+$('shapeAmount').value + (weatherActive ? Math.min(8,Math.round((weatherData.rain*2+windFactor+Math.abs(weatherData.temp-60)/20)*impact)) : 0);
+  for(let q=0;q<shapeAmount;q++){const qx=r(-20,410),qy=r(20,410);if(rng()>.45)out+=`<rect x="${qx}" y="${qy}" width="${r(18,90)}" height="${r(8,58)}" fill="${ink}" transform="rotate(${r(-55,55)} ${qx} ${qy})"/>`;else out+=`<circle cx="${qx}" cy="${qy}" r="${r(5,28)}" fill="none" stroke="${ink}" stroke-width="${r(2,9)}"/>`;}
+  // A few reference-inspired abstract interruptions.
+  if(rng()>.25) out+=`<path d="M150 80 C130 115 150 140 185 116 C218 91 226 132 198 154 C176 171 150 158 142 184 C135 208 176 216 204 196" fill="none" stroke="${ink}" stroke-width="${r(7,13)}" stroke-linecap="round" opacity=".9"/>`;
+  if(rng()>.35) out+=`<rect x="${r(250,330)}" y="${r(120,220)}" width="${r(55,100)}" height="${r(35,75)}" fill="${ink}" transform="rotate(${r(-25,25)} 330 180)"/>`;
+
+  const grids=+$('gridAmount').value;
+  if(grids>0 && rng()>.25){
+    out+=`<rect x="${r(300,350)}" y="${r(25,75)}" width="${55+grids*6}" height="${55+grids*6}" fill="url(#grid)" transform="rotate(${r(-12,16)} 370 90)" opacity=".7"/>`;
+  }
+
+  // Sparse print scratches, mostly near edges.
+  const texture=+$('texture').value;
+  for(let i=0;i<texture*4;i++){
+    const x=rng()>.5?r(330,440):r(0,120), y=r(70,400), len=r(6,42);
+    out+=`<line x1="${x}" y1="${y}" x2="${x+len}" y2="${y+r(-10,10)}" stroke="${ink}" stroke-width="${r(.4,1.8)}" opacity="${r(.18,.58)}"/>`;
+  }
+  $('collage').innerHTML=out;
+  requestAnimationFrame(applyVariableType);
+  // Atmospheric marks are clipped to the selected main shape; they never form a rectangular overlay.
+  let marks='';
+  if(weatherActive){
+    const windy=Math.min(32,Math.round(weatherData.wind/1.3*impact));
+    const rainy=Math.min(65,Math.round(weatherData.rain*14*impact));
+    const snowy=[71,73,75,77,85,86].includes(weatherData.code);
+    for(let i=0;i<windy;i++){
+      const x=r(-205,185),y=r(-190,190),len=r(22,58)+windFactor*16;
+      marks+=`<line class="wind-mark" x1="${x}" y1="${y}" x2="${x+len}" y2="${y-7}" stroke="${accent}" stroke-width="${r(1.5,4)}" stroke-linecap="round" opacity=".66"/>`;
+    }
+    for(let i=0;i<rainy;i++){
+      const x=r(-200,200),y=r(-205,205);
+      marks+=snowy?`<circle class="rain-mark" cx="${x}" cy="${y}" r="${r(2,5)}" fill="${accent}" opacity=".72"/>`:`<line class="rain-mark" x1="${x}" y1="${y}" x2="${x-6}" y2="${y+19}" stroke="${accent}" stroke-width="${r(2,4)}" stroke-linecap="round" opacity=".65"/>`;
+    }
+    if([0,1,2].includes(weatherData.code)){
+      for(let i=0;i<impact*2;i++){
+        const x=r(-160,160),y=r(-170,170),radius=r(8,17);
+        marks+=`<circle cx="${x}" cy="${y}" r="${radius}" fill="none" stroke="${accent}" stroke-width="2" opacity=".42"/>`;
+      }
+    }
+  }
+  $('weatherAtmosphere').innerHTML=marks;
+  $('poster').classList.toggle('motion-on',weatherActive && $('weatherMotion').checked);
+  if(weatherActive){
+    $('weatherExplain').innerHTML=`<strong>LIVE DESIGN MAPPING</strong> · ${Math.round(weatherData.temp)}°F → ${Math.round(tempFactor*100)}% letter scale · ${weatherData.wind.toFixed(1)} mph → ${Math.round(windFactor*22)}° extra rotation · ${weatherData.rain.toFixed(2)} mm → ${Math.min(65,Math.round(weatherData.rain*14*impact))} precipitation marks. Your 5 original palettes are preserved.`;
+  }else{
+    $('weatherExplain').textContent='Weather effects off. Original design and all 5 palettes remain available.';
+  }
+}
+function updateOutputs(){
+  document.querySelectorAll('.rangeRow').forEach(row=>{
+    const input=row.querySelector('input'), out=row.querySelector('output');
+    out.textContent=input.value+(input.id==='rotation'||input.id==='chaos'?'°':'');
+  });
+}
+$('palette').addEventListener('change',()=>{applyPalette();generate(false);});
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input',()=>{
+    if(['bg','paper','typeColor','accent'].includes(el.id)) $('palette').value='custom';
+    updateOutputs();
+    // Every control now updates the poster immediately.
+    // Keep the same seed while dragging so sliders visibly transform
+    // the current composition instead of jumping to a totally new one.
+    generate(false);
+  });
+});
+$('generate').addEventListener('click',()=>{
+  const base=+$('rotation').value;
+  const v=+$('variation').value;
+  const next=Math.max(-55,Math.min(-20,Math.round(base+r(-v*.8,v*.8))));
+  $('rotation').value=next;
+  updateOutputs();
+  generate(true);
+});
+['varWeight','varCasual','varSlant'].forEach(id=>$(id).addEventListener('input',()=>{updateOutputs();applyVariableType();}));
+$('useVariable').addEventListener('change',()=>generate(false));
+$('axisStream').addEventListener('change',()=>{generate(false);applyVariableType();});
+document.addEventListener('mousemove',e=>{if($('axisStream').value!=='mouse'||!$('useVariable').checked)return;const v=Math.max(0,Math.min(1,e.clientX/window.innerWidth));$('varCasual').value=Math.round(v*100);updateOutputs();applyVariableType();$('axisReadout').textContent=`Mouse X → CASL ${v.toFixed(2)}`;});
+const seriesPalettes=['original','blue','red','green','pink'];
+const seriesFonts=['Arial','Helvetica','Georgia','Times New Roman','Courier New'];
+const seriesWords=['TYPOGRAPHY','DESIGN','LETTER','FORM','RHYTHM','GRAPHIC','PRINT','MOTION'];
+let posterSeries=[];
+function capturePoster(){return new XMLSerializer().serializeToString($('poster').cloneNode(true));}
+function showSeries(){const bar=$('seriesBar');bar.innerHTML='';posterSeries.forEach((svgText,i)=>{const b=document.createElement('button');b.className='seriesThumb';b.innerHTML=svgText+`<div class="seriesLabel">POSTER ${i+1}</div>`;b.onclick=()=>{const d=new DOMParser().parseFromString(svgText,'image/svg+xml').documentElement;$('poster').innerHTML=d.innerHTML;};bar.appendChild(b);});}
+$('series').addEventListener('click',()=>{posterSeries=[];const modes=['scramble','cut','stack','scramble','wave'];for(let i=0;i<5;i++){$('chars').value=seriesWords[i];$('font').value=seriesFonts[i];$('palette').value=seriesPalettes[i];applyPalette();$('mode').value=modes[i];$('rotation').value=-46+i*2;$('letterSize').value=82+i*7;$('shapeAmount').value=2+(i%4);updateOutputs();generate(true);posterSeries.push(capturePoster());}showSeries();});
+$('randomColor').addEventListener('click',()=>{
+  const choices=['original','blue','red','green','pink','mono'];
+  $('palette').value=pick(choices); applyPalette(); generate(false);
+});
+$('randomType').addEventListener('click',()=>{
+  const words=['TYPOGRAPHY','DESIGN','POSTER','GRAPHIC','MOTION','RHYTHM','LETTER','SYSTEM'];
+  $('chars').value=pick(words); generate(true);
+});
+$('reset').addEventListener('click',()=>location.reload());
+$('export').addEventListener('click',()=>{
+  const svg=$('poster').cloneNode(true);
+  svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  svg.setAttribute('width','700'); svg.setAttribute('height','980');
+  const data='<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
+  const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='typographic-poster.svg'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+let weatherData=null;
+let demoActive=false;
+const demoPresets={demoHot:{temp:102,wind:2,rain:0,code:0,name:'HOT + SUNNY · SAMPLE'},demoWind:{temp:58,wind:35,rain:0,code:2,name:'WINDY · SAMPLE'},demoRain:{temp:48,wind:16,rain:8,code:63,name:'RAINY · SAMPLE'}};
+function displayReading(data,name,isDemo){
+  $('weatherTemp').textContent=Math.round(data.temp)+'°F';
+  $('weatherCondition').textContent=weatherCodes[data.code]||'Current weather';
+  $('weatherWind').textContent='Wind '+Number(data.wind).toFixed(1)+' mph';
+  $('weatherRain').textContent='Rain '+Number(data.rain).toFixed(2)+' mm';
+  $('weatherPlace').textContent=name;
+  $('weatherPreview').textContent=name.toUpperCase()+' · '+Math.round(data.temp)+'°F';
+  $('weatherStatus').textContent=isDemo?'DESIGN DEMO · Sample weather, not live':'Live · '+(data.time||'Updated');
+}
+Object.entries(demoPresets).forEach(([id,d])=>$(id).addEventListener('click',()=>{
+  demoActive=true;requestId++;weatherData={temp:d.temp,wind:d.wind,rain:d.rain,code:d.code};
+  $('weatherIntensity').value='3';$('weatherReact').checked=true;
+  $('demoNotice').textContent='Sample mode: '+d.name+'. Search a city or select Return to Live Weather.';
+  displayReading(weatherData,d.name,true);generate(false);
+}));
+$('demoLive').addEventListener('click',()=>{demoActive=false;$('demoNotice').textContent='Returning to real weather…';loadWeather(false);});
+let activeLocation={name:'New York, United States',latitude:40.7128,longitude:-74.0060};
+let requestId=0;
+const weatherCodes={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',61:'Rain',63:'Rain',65:'Heavy rain',71:'Snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+async function fetchJSON(url){const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw Error('Weather service returned '+response.status);return response.json();}
+async function loadWeather(search=false){
+ if(demoActive&&!search)return;
+ if(search){demoActive=false;$('demoNotice').textContent='Searching for real weather…';}
+ const id=++requestId;
+ $('weatherStatus').textContent='Connecting…';
+ try{
+  let loc=activeLocation;
+  if(search){
+   const q=$('weatherQuery').value.trim();if(!q)throw Error('Please enter a city or country.');
+   const geo=await fetchJSON('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=en&format=json');
+   if(id!==requestId)return;
+   if(!geo.results?.length)throw Error('Location not found. Try a city name.');
+   const result=geo.results[0];
+   loc={name:[result.name,result.admin1,result.country].filter((x,i,a)=>x&&a.indexOf(x)===i).join(', '),latitude:result.latitude,longitude:result.longitude};
+  }
+  const params=new URLSearchParams({latitude:String(loc.latitude),longitude:String(loc.longitude),current:'temperature_2m,wind_speed_10m,precipitation,weather_code',temperature_unit:'fahrenheit',wind_speed_unit:'mph',timezone:'auto'});
+  const data=await fetchJSON('https://api.open-meteo.com/v1/forecast?'+params);
+  if(id!==requestId)return;
+  if(!data.current||!Number.isFinite(data.current.temperature_2m))throw Error('Weather reading unavailable.');
+  activeLocation=loc;
+  const c=data.current;
+  weatherData={temp:c.temperature_2m,wind:c.wind_speed_10m,rain:c.precipitation,code:c.weather_code,time:c.time};
+  displayReading(weatherData,loc.name,false);
+  $('demoNotice').textContent='Live weather active. Choose a sample to compare conditions.';
+  generate(false);
+ }catch(err){if(id!==requestId)return;$('weatherStatus').textContent='Could not load weather: '+err.message+' Try again.';$('weatherCondition').textContent=weatherData?'Last available reading':'Weather unavailable';}
+}
+$('weatherForm').addEventListener('submit',e=>{e.preventDefault();loadWeather(true);});
+$('weatherReact').addEventListener('change',()=>generate(false));
+$('weatherIntensity').addEventListener('change',()=>generate(false));
+$('weatherMotion').addEventListener('change',()=>generate(false));
+updateOutputs(); generate(true); loadWeather(); setInterval(()=>loadWeather(false),60000);
+const LIVE_VIEWER_CODE="(function(){\nconst $=id=>document.getElementById(id);\nconst svg=$('liveArt');\nconst original=svg.outerHTML;\nlet current=null,seed=0;\nconst palettes=[['#f3f1e9','#f0dda8','#302f2b','#e66f55'],['#f1efe7','#d9e3ff','#152f8f','#ff654d'],['#f4efe7','#f2c5b8','#9f1d20','#ef5b3f'],['#f1efe5','#d8dfb7','#173d2a','#e16d45'],['#f5eee8','#efc8d3','#641f3b','#f06d52']];\nlet paletteIndex=0,layoutIndex=0;\nconst codes={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',61:'Rain',63:'Rain',65:'Heavy rain',71:'Snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm'};\nfunction el(id){return document.getElementById(id)}\nfunction choosePalette(n){paletteIndex=n; const p=palettes[n];const s=el('liveArt');\n el('posterBg')?.setAttribute('fill',p[0]);el('mainShapePath')?.setAttribute('fill',p[1]);\n const card=el('card');card?.querySelector('rect')?.setAttribute('fill',p[1]);\n el('cardText')?.setAttribute('fill',p[3]);el('footerGroup')?.setAttribute('fill',p[3]);\n el('weatherLabelTemp')?.setAttribute('fill',p[2]);el('weatherLabelTemp')?.setAttribute('stroke',p[1]);\n el('weatherLabelCity')?.setAttribute('fill',p[2]);el('weatherLabelCity')?.setAttribute('stroke',p[1]);\n s.querySelectorAll('#collage text,#collage rect,#collage circle,#collage path,#collage line').forEach(x=>{\n  if(x.hasAttribute('fill')&&x.getAttribute('fill')!=='none'&&!x.getAttribute('fill').startsWith('url('))x.setAttribute('fill',p[2]);\n  if(x.hasAttribute('stroke')&&x.getAttribute('stroke')!=='none')x.setAttribute('stroke',p[2]);\n });\n}\nfunction draw(){\n if(!current)return;\n const t=current.temperature_2m,w=current.wind_speed_10m,r=current.precipitation,c=current.weather_code;\n const scale=Math.max(.72,Math.min(1.38,1+(t-60)*.008));\n const wind=Math.min(1,w/35);\n const rot=-43+Math.sin(layoutIndex*1.8)*9;\n el('rotator')?.setAttribute('transform',`translate(337 332) rotate(${rot}) scale(${Math.min(1.14,Math.max(.88,scale))})`);\n const label=el('weatherOnShape');if(label)label.style.display='';\n el('weatherLabelTemp').textContent=Math.round(t)+'\u00b0F';\n el('weatherLabelCity').textContent=(window.placeName||'LIVE WEATHER').slice(0,22).toUpperCase()+' \u00b7 '+(codes[c]||'WEATHER').toUpperCase();\n el('weatherLabelCity').setAttribute('font-size','10');\n el('weatherOnShape')?.setAttribute('transform',`rotate(${-rot})`);\n const collage=el('collage');\n if(collage){collage.querySelectorAll('text').forEach((x,i)=>{\n   if(!x.dataset.baseTransform)x.dataset.baseTransform=x.getAttribute('transform')||'';\n   if(!x.dataset.baseSize)x.dataset.baseSize=x.getAttribute('font-size')||'95';\n   x.setAttribute('font-size',(parseFloat(x.dataset.baseSize)*scale).toFixed(1));\n   const dx=Math.sin(i*2.37+layoutIndex*3.1)*(8+wind*36);\n   const dy=Math.cos(i*1.61+layoutIndex*2.2)*(8+wind*22);\n   x.setAttribute('transform',`translate(${dx.toFixed(1)} ${dy.toFixed(1)}) `+x.dataset.baseTransform);\n });}\n const marks=el('weatherAtmosphere');if(marks){marks.innerHTML='';\n  const ns='http://www.w3.org/2000/svg';\n  const n=Math.min(42,Math.round(w*.8+r*4));\n  for(let i=0;i<n;i++){const line=document.createElementNS(ns,'line');let x=(i*79+layoutIndex*29)%440-220,y=(i*53+layoutIndex*17)%440-220;\n   line.setAttribute('x1',x);line.setAttribute('y1',y);line.setAttribute('x2',x+12+wind*35);line.setAttribute('y2',y+(r>0?28:4));line.setAttribute('stroke',palettes[paletteIndex][3]);line.setAttribute('stroke-width',r>0?2:1.5);line.setAttribute('opacity','.68');marks.appendChild(line);\n  }\n }\n el('status').textContent=`${Math.round(t)}\u00b0F \u00b7 ${codes[c]||'Current weather'} \u00b7 Wind ${w.toFixed(1)} mph \u00b7 Rain ${r.toFixed(2)} mm`;\n el('place').textContent=window.placeName||'Weather';\n}\nasync function update(search){\n el('status').textContent='Loading live weather\u2026';\n try{\n  if(search){const q=el('location').value.trim();if(!q)throw Error('Enter a city or country');\n   const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=1&language=en&format=json').then(x=>x.json());\n   if(!g.results?.length)throw Error('Location not found; try a city');\n   const l=g.results[0];window.loc={latitude:l.latitude,longitude:l.longitude};window.placeName=[l.name,l.country].filter(Boolean).join(', ');\n  }\n  const u=new URL('https://api.open-meteo.com/v1/forecast');u.searchParams.set('latitude',window.loc.latitude);u.searchParams.set('longitude',window.loc.longitude);u.searchParams.set('current','temperature_2m,wind_speed_10m,precipitation,weather_code');u.searchParams.set('temperature_unit','fahrenheit');u.searchParams.set('wind_speed_unit','mph');\n  const response=await fetch(u);if(!response.ok)throw Error('Weather service error');const j=await response.json();\n  if(!j.current)throw Error('Weather unavailable');current=j.current;draw();\n }catch(e){el('status').textContent='Weather error: '+e.message;}\n}\nel('search').addEventListener('click',()=>update(true));el('location').addEventListener('keydown',e=>{if(e.key==='Enter')update(true)});\nel('randomize').addEventListener('click',()=>{layoutIndex++;draw()});\nel('palette').addEventListener('click',()=>{choosePalette((paletteIndex+1)%5);draw()});\nel('refresh').addEventListener('click',()=>update(false));\nel('location').value=window.placeName;choosePalette(0);update(false);setInterval(()=>update(false),60000);\n})();";
+
+function downloadLiveWebsite(){
+ const svgText=new XMLSerializer().serializeToString($('poster').cloneNode(true)).replace('id="poster"','id="liveArt"');
+ const locationData=JSON.stringify(activeLocation);
+ const nameData=JSON.stringify(activeLocation.name);
+ const page=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weather / Typographic Live Website</title>
+ <style>*{box-sizing:border-box}body{margin:0;background:#f3f1eb;color:#1c1c1a;font-family:Arial,Helvetica,sans-serif}header{padding:18px 25px;border-bottom:1px solid #c9c5bb;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}h1{font-size:17px;letter-spacing:.06em;margin:0}.tag{font-size:10px;letter-spacing:.13em;color:#666}.layout{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:calc(100vh - 75px)}aside{background:#faf9f5;border-right:1px solid #ccc;padding:25px;display:flex;flex-direction:column;gap:13px}label{font-size:11px;font-weight:bold;letter-spacing:.1em}input{width:100%;padding:12px;border:1px solid #aaa;font-size:14px}button{cursor:pointer;background:#1c1c1a;color:white;border:1px solid #1c1c1a;padding:12px;font-weight:bold;letter-spacing:.03em}button.secondary{background:transparent;color:#1c1c1a}#status{font-size:13px;line-height:1.7;min-height:50px}#place{font-size:17px;font-weight:bold}main{padding:25px;display:flex;align-items:center;justify-content:center;min-width:0}.art{width:min(100%,500px);filter:drop-shadow(0 12px 20px #0002)}.art svg{display:block;width:100%;height:auto;max-height:calc(100vh - 130px)}.note{font-size:11px;line-height:1.5;color:#666} @media(max-width:750px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #ccc}main{padding:16px}.art svg{max-height:none}}</style></head>
+ <body><header><h1>WEATHER / TYPOGRAPHY</h1><span class="tag">LIVE DATA × GENERATIVE WEBSITE</span></header><div class="layout"><aside><label>LOCATION</label><input id="location" aria-label="City or country" placeholder="Search city or country"><button id="search">SEARCH WEATHER</button><div id="place">Loading…</div><div id="status" aria-live="polite">Connecting to live weather…</div><button id="randomize">GENERATE NEW LAYOUT</button><button class="secondary" id="palette">CHANGE COLOR PALETTE</button><button class="secondary" id="refresh">REFRESH LIVE DATA</button><p class="note">Live temperature changes type scale. Wind changes letter movement and line density. Rain changes the marks. Data refreshes every 60 seconds. Five original palettes remain available. Weather data: Open-Meteo.</p></aside><main><div class="art">${svgText}</div></main></div>
+ <script>window.loc=${locationData};window.placeName=${nameData};</`+`script><script>${LIVE_VIEWER_CODE}</`+`script></body></html>`;
+ const blob=new Blob([page],{type:'text/html;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='my_live_weather_website.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+$('exportWebsite').addEventListener('click',downloadLiveWebsite);
+</script>
+</body>
+</html>
